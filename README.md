@@ -1,1 +1,1 @@
-# py_gen_util
+# py_gen_util 3D glTF2.0 utilites
