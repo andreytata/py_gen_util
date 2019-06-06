@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import pdb, sys, os, json, weakref, struct, gx_gltf_type as schema, inspect
+import pdb, sys, os, json, weakref, struct
+import gx_gltf_type as schema
+import inspect
 
 from pprint import pprint
 
@@ -220,7 +222,7 @@ class Buffer(schema.Buffer, GltfNode):
         path = os.path.normpath(path)
         path = os.path.split(path)[0]
         path = os.path.join(path, self.uri)
-        self.buff = file(path, "rb").read()
+        self.buff = open(path, "rb").read()
         return o                            # !return stored overloaded method results
 
 class MeshPrimitive(schema.MeshPrimitive, GltfNode ):
@@ -250,7 +252,7 @@ class Mesh(schema.Mesh, GltfNode):
     
     def gen_shared_joints_0__normal__position__texcoord_0__weights_0(self):
         gltf_name  = self.get_gltf().get_gx_gltf_name()
-        weights_0  = self.primitives[0].get_WEIGTHS_0()
+        weights_0  = self.primitives[0].get_WEIGHTS_0()
         joints_0   = self.primitives[0].get_JOINTS_0()
         texcoord_0 = self.primitives[0].get_TEXCOORD_0()
         normal     = self.primitives[0].get_NORMAL()
@@ -321,7 +323,7 @@ class Gltf(schema.Gltf):
         self.scenes      = []           # self scenes (each contain nodes list)
         self.nodes       = []           # self nodes tree
         self.path        = file_path
-        self.buff        = json.loads(file(file_path, "r").read())
+        self.buff        = json.loads(open(file_path, "r").read())
         for i in self.buff:
             # print(i)
             m_name = "parse_%s" % i
@@ -408,8 +410,8 @@ class Gltf(schema.Gltf):
 
 
 if __name__ == '__main__':
-    gltf = Gltf("C:/WORK/EXP61/devicea/gx_gltf_test/BoxTextured.gltf")
-    #gltf = Gltf("C:/work/EXP61/devicea/gx_fbx_test/Nikita.gltf")
+    # gltf = Gltf("C:/WORK/EXP61/devicea/gx_gltf_test/BoxTextured.gltf")
+    gltf = Gltf("C:/work/EXP61/devicea/gx_fbx_test/Nikita.gltf")
     
     for mesh in gltf.meshes:
         vertex_type = ""

@@ -64,7 +64,7 @@ class Schema(object):
                     elif  'string' == defs['type']: meta[p] = {'type': 'QString'}
                     elif 'boolean' == defs['type']: meta[p] = {'type': 'bool'}
                     elif   'array' == defs['type']:
-                        item_type = defs['items']['type'] if defs['items'].has_key('type') else defs['items']
+                        item_type = defs['items']['type'] if 'type' in defs['items'] else defs['items']
                         if dict == type(item_type):
                             item_type = Schema.refs[item_type['$ref']]
                         meta[p] = {'type': ('GxArray', 'int', item_type)}
@@ -1112,7 +1112,7 @@ def get_schema_based_list(vars_dict):
             if o == Schema:
                 continue
             res.append(o)
-    return sorted(res)
+    return res
 
 
 if __name__ == '__main__':
@@ -1227,10 +1227,10 @@ if __name__ == '__main__':
                         print("  %-20sm_%s;" % ( typedef[0] , name ) )
                 if len(typedef) == 3:
                     # print hasattr(cls, cls.meta[p]['type'][0])
-                    print " /*%s,%s*/" % (typedef, name)
+                    print( " /*%s,%s*/" % (typedef, name ))
             elif dict == type(typedef):
-                print " // Dict type '%s:%s'" % (typedef, name)
+                print(" // Dict type '%s:%s'" % (typedef, name) )
                 # print hasattr(cls, cls.meta[p]['type'][0])
             else:
-                print " // UNSUPPORTED type '%s : %s'" % (type(typedef), name)
+                print(" // UNSUPPORTED type '%s : %s'" % (type(typedef), name) )
         print("};\n")
