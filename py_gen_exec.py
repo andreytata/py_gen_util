@@ -20,11 +20,12 @@ def generate_source_from_gltf(target_dir, match):
     print('   | config            %s' % config )
     gltf_file_path = os.path.join(target_dir, config['gltf'])
     print('   | gltf_file_path    "%s"' % gltf_file_path)
-    if not os.path.isfile(gltf_file_path):
-        raise IOError(gltf_file_path)
+    
+    if not os.path.isfile(gltf_file_path): raise IOError(gltf_file_path)
+    
     namespace = match.groups()[0]
     target_pri = os.path.join(target_dir, "gx_gen_%s.pri" % namespace)
-                                               # EXAMLE: 
+                                        # EXAMLE: 
     proj = QtGltfBuiltinPri( namespace  #'Slava_Rig_2'
         , gltf_file_path   #'C:/work/EXP61/devicea/gx_fbx_test/Slava_Rig_2014_2015_NEW.gltf'
         , target_dir       #'C:/WORK/GEN/gx_gen_Slava_Rig_2'

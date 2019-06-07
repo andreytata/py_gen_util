@@ -6,6 +6,7 @@ class QtTemplate:
     def __init__(self, self_pri, mesh_key):
         self.weak_pri = weakref.ref(self_pri)
         self.mesh_key = mesh_key
+        self.slots = []
         pass #print("++%s" % self)
 
     def get_name(self):

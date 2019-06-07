@@ -50,7 +50,7 @@ class Schema(object):
                 else:
                     enum_type = "<ERROR>"+repr(d)
             return [ enum_type, enum ]
-        return repr(item)
+        return repr(src)
     
     @classmethod                         # use decorator to define method bounded with class object, (not class instance)
     def get_schema(cls):                 # and collect type info for each class property from class.schema JSON-like info
@@ -78,7 +78,7 @@ class Schema(object):
                     elif     'name' == p:           meta[p] = {'type': 'QString'}
                     else:                           meta[p] = {'type': defs }
             setattr(cls,'meta',meta)
-        return cls.meta
+        return getattr(cls, 'meta')
 
 
 class Image(Schema):
@@ -1132,7 +1132,7 @@ if __name__ == '__main__':
                 else:
                     enum_type = "<ERROR>"+repr(d)
             return { enum_type: enum }
-        return repr(item)
+        return repr(src)
     
     def print_info(cls, head='  '):
         print("%sclass Gx%s: public QObject" % ( head,  cls.__name__ ) )

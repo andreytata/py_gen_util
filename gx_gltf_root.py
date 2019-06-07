@@ -161,7 +161,7 @@ class Accessor(schema.Accessor, GltfNode):
         # print offset, form, size, stride
         source = self.get_buffer().buff
         buff = list()
-        for i in xrange(self.count):
+        for _ in xrange(self.count):
             subj = struct.unpack(form, source[offset:(offset+size)])
             # subj = tuple([ round(i, 4) for i in subj ])
             for ii in subj:
