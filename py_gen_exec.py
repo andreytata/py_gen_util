@@ -32,10 +32,7 @@ def generate_source_from_gltf(target_dir, match):
         , target_pri       #'C:/WORK/GEN/gx_gen_BoxTextured/gx_gen_Slava_Rig_2.pri'
     )
     proj.generate()
-
     print('  -o-END "%s"' % target_dir)
-
-
 
 if __name__=='__main__':
     print('''Python %s''' % sys.version)

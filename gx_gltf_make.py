@@ -245,7 +245,7 @@ class gxDagTree(object):
                 comp_buff = attr_accessor.get_components()
                 ts = attr_accessor.get_type_size(item_type)
                 #: print item_type, comp_buff[offset:offset+type_size]
-                mesh[attr_name] = [comp_buff[offset*ts:offset*ts+ts] for offset in xrange(0, len(comp_buff)/ts)]
+                mesh[attr_name] = [comp_buff[offset*ts:offset*ts+ts] for offset in range(0, int(len(comp_buff)/ts))]
                 mesh[attr_name + '_type'] = "%s_%s" % (attr_accessor.get_type() , attr_accessor.get_component_type())
             # pdb.set_trace()
 
@@ -301,7 +301,7 @@ class gxDagTree(object):
         position   = self.shared['mesh'][mesh_id]['POSITION']    # self.source.gltf.meshes. shared['mesh'][mesh_id]['POSITION']
         normal     = self.shared['mesh'][mesh_id]['NORMAL']
         texcoord_0 = self.shared['mesh'][mesh_id]['TEXCOORD_0']
-        interleaved = zip(position, normal , texcoord_0)
+        interleaved = list(zip(position, normal , texcoord_0))
         attr = self.shared['mesh'][mesh_id]
         for i in interleaved:
             outp += ("{ QVector3D(%s, %s, %s), QVector3D(%s, %s, %s), QVector2D(%s, %s) } ,\n"
@@ -317,7 +317,7 @@ class gxDagTree(object):
         weights_0  = self.shared['mesh'][mesh_id]['WEIGHTS_0']
         joints_0   = self.shared['mesh'][mesh_id]['JOINTS_0']
         texcoord_0 = self.shared['mesh'][mesh_id]['TEXCOORD_0']
-        interleaved = zip(position, normal , weights_0, joints_0, texcoord_0)
+        interleaved = list( zip(position, normal , weights_0, joints_0, texcoord_0) )
         attr = self.shared['mesh'][mesh_id]
         for i in interleaved:
             outp += ("{ QVector3D(%s, %s, %s), QVector3D(%s, %s, %s), QVector4D(%s, %s, %s, %s), QVector4D(%s, %s, %s, %s), QVector2D(%s, %s) } ,\n"

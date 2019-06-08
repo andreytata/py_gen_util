@@ -18,7 +18,7 @@ def xtest_class(cls, head='  '):
             elif 'boolean' == defs['type']:
                 print('%sdict(%20s = %s)' % (shead, p, {'gx_type': 'bool'}))
             elif 'array' == defs['type']:
-                item_type = defs['items']['type'] if defs['items'].has_key('type') else defs['items']
+                item_type = defs['items']['type'] if 'type' in defs['items'] else defs['items']
                 if dict == type(item_type):
                     item_type = gx_gltf_type.Schema.refs[item_type['$ref']]
                 print('%sdict(%20s = %s)' % (shead, p, {'gx_type': 'GxMap<int, %s>' % item_type}))

@@ -40,14 +40,14 @@ class GltfNode(object):
         return getattr(self, 'root')()       # Call weakref instance, for extract hardref to shared object
 
     def __getattr__(self, name):
-        if hasattr(self, 'dict'):
-            if not name in self.dict.keys():
-                if 'name' == name:
-                    self.dict['name'] = 'noname'
-                if 'byteOffset' == name:
-                    self.dict['byteOffset'] = 0
-            return self.dict[name]
-        raise AttributeError(self, name)
+        if not name in self.dict:
+            if 'name' == name:
+                self.dict['name'] = 'noname'
+            elif 'byteOffset' == name and type(self) == Accessor:
+                self.dict['byteOffset'] = 0
+            else:
+                raise AttributeError(self, name)
+        return self.dict[name]
 
     def pprint(self, head = ""):
         print("%s%s at %s" % (head, self.__class__.__name__, "%08X"% id(self)) )
@@ -161,7 +161,7 @@ class Accessor(schema.Accessor, GltfNode):
         # print offset, form, size, stride
         source = self.get_buffer().buff
         buff = list()
-        for _ in xrange(self.count):
+        for _ in range(self.count):
             subj = struct.unpack(form, source[offset:(offset+size)])
             # subj = tuple([ round(i, 4) for i in subj ])
             for ii in subj:
@@ -209,7 +209,7 @@ class Buffer(schema.Buffer, GltfNode):
         return sorted(['byteLength', 'uri'])
 
     def print_hex_dump(self):
-        for ii in xrange(0, self.byteLength, 16):
+        for ii in range(0, self.byteLength, 16):
             print("%08X " % ii + self.buffers[0].hex_dump(ii, 8) + " | " + self.buffers[0].hex_dump(ii + 8, 8))
             
     def hex_dump(self, offset, count):
