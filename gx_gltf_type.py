@@ -1118,6 +1118,7 @@ def get_schema_based_list(vars_dict):
 if __name__ == '__main__':
      
     # OLD DEPRECATED CODE
+    
     def anyOf(src):
         if list == type(src):
             enum = []

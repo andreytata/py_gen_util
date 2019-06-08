@@ -1,10 +1,6 @@
-import unittest
+import gx_gltf_type
 
-from gx_gltf_type import Schema
-from gx_gltf_type import Accessor, Buffer, BufferView, Animation, Mesh, MeshPrimitive
-from gx_gltf_type import Node, Material, Texture, Sampler, Gltf, Scene, Skin, Image
-
-def test_class(cls, head='  '):
+def xtest_class(cls, head='  '):
     print("%sclass Gx%s: public QObject" % ( head,  cls.__name__ ) )
     print("%s{" % (head,) )
     print("%s    Q_OBJECT" % (head,) )
@@ -24,7 +20,7 @@ def test_class(cls, head='  '):
             elif 'array' == defs['type']:
                 item_type = defs['items']['type'] if defs['items'].has_key('type') else defs['items']
                 if dict == type(item_type):
-                    item_type = Schema.refs[item_type['$ref']]
+                    item_type = gx_gltf_type.Schema.refs[item_type['$ref']]
                 print('%sdict(%20s = %s)' % (shead, p, {'gx_type': 'GxMap<int, %s>' % item_type}))
             elif 'object' == defs['type']:
                 print('%sdict(%20s = %s)' % (shead, p, {'gx_type': 'GxDict'}))
@@ -48,82 +44,45 @@ def test_class(cls, head='  '):
                 
     print("%s}; // Gx%s End." % (head, cls.__name__) )
     print("")
-    return True
 
-if __name__=='__main__':
-    unittest.main()
+def test_Accessor():
+    xtest_class(gx_gltf_type.Accessor)
 
-    # # OLD DEPRECATED CODE
-    # def anyOf(src):
-    #     if list == type(src):
-    #         enum = []
-    #         enum_type = 'UNDEFINED'
-    #         for d in src:
-    #             if 'enum' in d:
-    #                 enum.append(d['enum'][0])
-    #             elif 'type' in d:
-    #                 enum_type = d['type']
-    #                 if 'integer' == enum_type:
-    #                     enum_type = 'int'
-    #             else:
-    #                 enum_type = "<ERROR>"+repr(d)
-    #         return { enum_type: enum }
-    #     return repr(src)
-    
+def test_Buffer():
+    xtest_class(gx_gltf_type.Buffer)
 
-    # OLD TESTS
-    test_class(Accessor)
-    test_class(Buffer)
-    test_class(BufferView)
-    test_class(Animation)
-    test_class(Mesh)
-    test_class(MeshPrimitive)
-    test_class(Node)
-    test_class(Material)
-    test_class(Texture)
-    test_class(Sampler)
-    test_class(Gltf)
-    test_class(Scene)
-    test_class(Skin)
-    test_class(Image)
+def test_BufferView():
+    xtest_class(gx_gltf_type.BufferView)
 
-    
-    # from pprint import pprint
-    
-    # tested = get_schema_based_list(locals())
-    
-    # for schema_based_class in tested:
-    #     schema_based_class.get_schema()
+def test_Animation():
+    xtest_class(gx_gltf_type.Animation)
 
-    # for cls in tested:
-    #     print("\n====%s===================" % cls.__name__)
-    #     cls.get_schema()
-    #     cls_class_list = {}
-    #     pprint(cls.meta)
-    #     print("\n\nclass Gx%s: public QObject" % cls.__name__)
-    #     print("{")
-    #     print("   Q_OBJECT")
-    #     print("public:")
-    #     for name in sorted(cls.meta.keys()):
-    #         if 'sparse' == name:
-    #             continue
-    #         typedef = cls.meta[name]['type']
-    #         if str == type(typedef):
-    #             # print(" // Simple type '%s:%s'" % (typedef, name))
-    #             print("  %-20sm_%s;" % (typedef, name))
-    #         elif tuple == type(typedef):
-    #             # print(" // Complex type '%s:%s'" % (typedef, name))
-    #             if len(typedef) == 2:  
-    #                 if list == type(typedef[0]):  # case => (['int',[...]], 'anyOf')
-    #                     print("  %-20sm_%s;" % ( typedef[0][0] , name ) )
-    #                 else:                         # case => ('int', 'anyOf')
-    #                     print("  %-20sm_%s;" % ( typedef[0] , name ) )
-    #             if len(typedef) == 3:
-    #                 # print hasattr(cls, cls.meta[p]['type'][0])
-    #                 print( " /*%s,%s*/" % (typedef, name ))
-    #         elif dict == type(typedef):
-    #             print(" // Dict type '%s:%s'" % (typedef, name) )
-    #             # print hasattr(cls, cls.meta[p]['type'][0])
-    #         else:
-    #             print(" // UNSUPPORTED type '%s : %s'" % (type(typedef), name) )
-    #     print("};\n")
+def test_Mesh():
+    xtest_class(gx_gltf_type.Mesh)
+
+def test_MeshPrimitive():
+    xtest_class(gx_gltf_type.MeshPrimitive)
+
+def test_Node():
+    xtest_class(gx_gltf_type.Node)
+
+def test_Material():
+    xtest_class(gx_gltf_type.Material)
+
+def test_Texture():
+    xtest_class(gx_gltf_type.Texture)
+
+def test_Sampler():
+    xtest_class(gx_gltf_type.Sampler)
+
+def test_Gltf():
+    xtest_class(gx_gltf_type.Gltf)
+
+def test_Scene():
+    xtest_class(gx_gltf_type.Scene)
+
+def test_Skin():
+    xtest_class(gx_gltf_type.Skin)
+
+def test_Image():
+    xtest_class(gx_gltf_type.Image)
