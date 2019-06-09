@@ -37,12 +37,14 @@ class QtTemplate:
 
 class QtGpuSkin(QtTemplate):
     template = """
-    class QtGpuSkin_%%get_name_lower%%_%%gen_signature%%: public GeometryEngine
+    class QtGpuSkin_%%get_name_lower%%: public GeometryEngine
     {
         QOBJECT
     public:
         virtual void drawGeometry(QOpenGLShaderProgram *program);
         virtual void initGeometry();
+        const char* get_vbo_signature() { return "%%gen_signature%%"; }
+
     public slots:
         %%gen_public_slots%%
     };
@@ -64,12 +66,13 @@ class QtGpuSkin(QtTemplate):
 
 class QtGpuMesh(QtTemplate):
     template = """
-    class gxGpuMesh_%%get_name_lower%%_%%gen_signature%%: public GeometryEngine
+    class gxGpuMesh_%%get_name_lower%%: public GeometryEngine
     {
         QOBJECT
     public:
         virtual void drawGeometry(QOpenGLShaderProgram *program);
         virtual void initGeometry();
+        const char* get_vbo_signature() { return "%%gen_signature%%"; }
     public slots:
         %%gen_public_slots%%
     };
