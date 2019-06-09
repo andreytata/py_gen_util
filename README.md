@@ -1,1 +1,1 @@
-# py_gen_util glTF2.0 to GXQT utilites
+# py_gen_util glTF2.0 to gxgl utilites

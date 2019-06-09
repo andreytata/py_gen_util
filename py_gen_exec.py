@@ -4,8 +4,10 @@
 """Execute rebuild source for each qmake pri projects at self parent folder.
 All folders named as gx_gen_NAMESPACE_NAME, with gx_gen_NAMESPACE_NAME.pri, this
 script find line with source glTF2.0 file. Folder can contain more then one file
-used ".gltf" extention, generator must use only one, defined in projects *.pri
-file."""
+used .gltf extention, generator must use only one, defined in "py_gen_util.json:
+{"gltf":"file_name.gltf"
+}
+"""
 
 import os, sys, re, json
 from gx_cpp_glsl import QtGltfBuiltinPri
@@ -26,10 +28,10 @@ def generate_source_from_gltf(target_dir, match):
     namespace = match.groups()[0]
     target_pri = os.path.join(target_dir, "gx_gen_%s.pri" % namespace)
                                         # EXAMLE: 
-    proj = QtGltfBuiltinPri( namespace  #'Slava_Rig_2'
-        , gltf_file_path   #'C:/work/EXP61/devicea/gx_fbx_test/Slava_Rig_2014_2015_NEW.gltf'
-        , target_dir       #'C:/WORK/GEN/gx_gen_Slava_Rig_2'
-        , target_pri       #'C:/WORK/GEN/gx_gen_BoxTextured/gx_gen_Slava_Rig_2.pri'
+    proj = QtGltfBuiltinPri( namespace  # Slava_Rig_2
+        , gltf_file_path                # /bla/bla/Blender_export/Slava_Rig_2014_2015_NEW.gltf
+        , target_dir                    # /bla/bla/my_qt_project/builtins/gx_gen_Slava_Rig_2
+        , target_pri                    # /bla/bla/my_qt_project/builtins/gx_gen_Slava_Rig_2/gx_gen_Slava_Rig_2.pri'
     )
     proj.generate()
     print('  -o-END "%s"' % target_dir)
