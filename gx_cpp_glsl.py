@@ -1,8 +1,17 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import sys, re, json, weakref
+"""Generate single qmake pri project from glTF2.0 export file.
+Include classes used for build one Generation GAP's component.
+from gx_cpp_glsl.py import QtGltfBuiltinPri as GenPri
+pri = QtGltfBuiltinPri( namespace_name
+                , input_gltf_file_path
+                , output_folder_path
+                , output_project_file_path )
+pri.generate()
+"""
 
+import sys, re, json, weakref
 from gx_gltf_make import (Gltf, DagTree, gxDagTree)
 
 class QtTemplate:
@@ -235,9 +244,9 @@ namespace geom { namespace %%get_name_lower%% {
 
 
 if __name__ =='__main__':
-    test = QtGltfBuiltinPri('Slava_Rig_2'
-        , 'C:/work/EXP61/devicea/gx_fbx_test/Slava_Rig_2014_2015_NEW.gltf'
-        , 'C:/WORK/GEN/gx_gen_Slava_Rig_2'
-        , 'C:/WORK/GEN/gx_gen_BoxTextured/gx_gen_Slava_Rig_2.pri'
+    test = QtGltfBuiltinPri('slava_rig_2014_2015_new'
+        , '../gx_gen_slava_rig_2014_2015_new/Slava_Rig_2014_2015_NEW.gltf'
+        , '../gx_gen_slava_rig_2014_2015_new'
+        , '../gx_gen_slava_rig_2014_2015_new/slava_rig_2014_2015_new.pri'
     )
     test.generate()
