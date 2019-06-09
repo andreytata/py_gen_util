@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 import sys, re, json, weakref
 
 from gx_gltf_make import (Gltf, DagTree, gxDagTree)
@@ -21,10 +24,9 @@ class QtTemplate:
         return self.get_name().upper()
 
     def gen_public_slots(self):
-        buff = "//GEN PUBLIC SLOTS BEGIN\n"
+        buff = "//PUBLIC SLOTS\n"
         for i in self.slots:
             buff += i.generate(self)
-        buff+= "//GEN PUBLIC SLOTS END"
         return buff
 
     def __call__(self, match):

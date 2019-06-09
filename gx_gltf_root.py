@@ -1,32 +1,33 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+"""glTF2.0 file loader classes. Supported only json based *.gltf text
+files with external binary data file (*.glb format not supported yet).
+"""
+
 import pdb, sys, os, json, weakref, struct
 import gx_gltf_type as schema
 import inspect
 
 from pprint import pprint
 
-
-def get_schema_based(vars_dict):
-    print(get_schema_based)
-    res = list()
-    names = vars_dict.keys()
-    for n in names:
-        o = vars_dict[n]
-        if inspect.isclass(o) and issubclass(o, schema.Schema):
-            res.append(o)
-    return sorted(res)
+# def get_schema_based(vars_dict):
+#     print(get_schema_based)
+#     res = list()
+#     names = vars_dict.keys()
+#     for n in names:
+#         o = vars_dict[n]
+#         if inspect.isclass(o) and issubclass(o, schema.Schema):
+#             res.append(o)
+#     return sorted(res)
 
 
 class GltfNode(object):
-    def __init__(self, d):
-        # print("++", self)
+    def __init__(self, d):   # print("++", self)
         self.dict = d
 
     def __del__(self):
-        pass
-        # print("--", self)
+        pass  # print("--", self)
         
     def set_gltf(self, base):
         setattr(self, 'root', weakref.ref(base, self.del_gltf))
@@ -34,10 +35,11 @@ class GltfNode(object):
 
     def del_gltf(self, base):
         pass
-        # print("=>on_lost_root", self, base)  # GLTF Node's lost root object signal
+        # print("=>on_lost_root", self, base)
+        # GLTF Node's lost root object signal
 
     def get_gltf(self):
-        return getattr(self, 'root')()       # Call weakref instance, for extract hardref to shared object
+        return getattr(self, 'root')()  # Call weakref instance, for extract hardref to shared object
 
     def __getattr__(self, name):
         if not name in self.dict:
@@ -57,17 +59,29 @@ class GltfNode(object):
         return self
             
 
-class Animation(schema.Animation, GltfNode): pass
+class Animation(schema.Animation, GltfNode):
+    pass
 
-class Material(schema.Material, GltfNode): pass
 
-class Texture(schema.Texture, GltfNode): pass
+class Material(schema.Material, GltfNode):
+    pass
 
-class Sampler(schema.Sampler, GltfNode): pass
 
-class Image(schema.Image, GltfNode): pass
+class Texture(schema.Texture, GltfNode):
+    pass
 
-class Camera(schema.Camera, GltfNode): pass
+
+class Sampler(schema.Sampler, GltfNode):
+    pass
+
+
+class Image(schema.Image, GltfNode):
+    pass
+
+
+class Camera(schema.Camera, GltfNode):
+    pass
+
 
 class Skin(schema.Skin, GltfNode):
     def get_inverseBindMatrices(self):
@@ -409,12 +423,10 @@ class Gltf(schema.Gltf):
         
 
 
-if __name__ == '__main__':
-    # gltf = Gltf("C:/WORK/EXP61/devicea/gx_gltf_test/BoxTextured.gltf")
+def test_gltf_Nikita():
     gltf = Gltf("C:/work/EXP61/devicea/gx_fbx_test/Nikita.gltf")
-    
     for mesh in gltf.meshes:
-        vertex_type = ""
+        # vertex_type = ""
         vertex_attr = mesh.get_attributes()
         sorted_attr = sorted(vertex_attr)
         gen_shared = ('gen_shared_'+'__'.join(sorted_attr)).lower()
@@ -423,6 +435,12 @@ if __name__ == '__main__':
         pprint( gen_method.__call__() )
         gen_method = getattr(mesh, gen_cloned)
         pprint( gen_method.__call__() )
+
+if __name__ == '__main__':
+
+    test_gltf_Nikita()
+    # gltf = Gltf("C:/WORK/EXP61/devicea/gx_gltf_test/BoxTextured.gltf")
+
         #pdb.set_trace()
         
     

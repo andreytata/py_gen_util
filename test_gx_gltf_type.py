@@ -1,4 +1,8 @@
-import gx_gltf_type
+#!/usr/bin/env python
+# coding: utf-8
+
+import gx_gltf_type    # Tested module
+import unittest        # The python unittest framework
 
 def xtest_class(cls, head='  '):
     print("%sclass Gx%s: public QObject" % ( head,  cls.__name__ ) )
@@ -45,44 +49,49 @@ def xtest_class(cls, head='  '):
     print("%s}; // Gx%s End." % (head, cls.__name__) )
     print("")
 
-def test_Accessor():
-    xtest_class(gx_gltf_type.Accessor)
+class Test_TestGxGltfTypeClasses(unittest.TestCase):
 
-def test_Buffer():
-    xtest_class(gx_gltf_type.Buffer)
+    def test_Accessor(self):
+        xtest_class(gx_gltf_type.Accessor)
 
-def test_BufferView():
-    xtest_class(gx_gltf_type.BufferView)
+    def test_Buffer(self):
+        xtest_class(gx_gltf_type.Buffer)
 
-def test_Animation():
-    xtest_class(gx_gltf_type.Animation)
+    def test_BufferView(self):
+        xtest_class(gx_gltf_type.BufferView)
 
-def test_Mesh():
-    xtest_class(gx_gltf_type.Mesh)
+    def test_Animation(self):
+        xtest_class(gx_gltf_type.Animation)
 
-def test_MeshPrimitive():
-    xtest_class(gx_gltf_type.MeshPrimitive)
+    def test_Mesh(self):
+        xtest_class(gx_gltf_type.Mesh)
 
-def test_Node():
-    xtest_class(gx_gltf_type.Node)
+    def test_MeshPrimitive(self):
+        xtest_class(gx_gltf_type.MeshPrimitive)
 
-def test_Material():
-    xtest_class(gx_gltf_type.Material)
+    def test_Node(self):
+        xtest_class(gx_gltf_type.Node)
 
-def test_Texture():
-    xtest_class(gx_gltf_type.Texture)
+    def test_Material(self):
+        xtest_class(gx_gltf_type.Material)
 
-def test_Sampler():
-    xtest_class(gx_gltf_type.Sampler)
+    def test_Texture(self):
+        xtest_class(gx_gltf_type.Texture)
 
-def test_Gltf():
-    xtest_class(gx_gltf_type.Gltf)
+    def test_Sampler(self):
+        xtest_class(gx_gltf_type.Sampler)
 
-def test_Scene():
-    xtest_class(gx_gltf_type.Scene)
+    def test_Gltf(self):
+        xtest_class(gx_gltf_type.Gltf)
 
-def test_Skin():
-    xtest_class(gx_gltf_type.Skin)
+    def test_Scene(self):
+        xtest_class(gx_gltf_type.Scene)
 
-def test_Image():
-    xtest_class(gx_gltf_type.Image)
+    def test_Skin(self):
+        xtest_class(gx_gltf_type.Skin)
+
+    def test_Image(self):
+        xtest_class(gx_gltf_type.Image)
+
+if __name__ == '__main__':
+    unittest.main()

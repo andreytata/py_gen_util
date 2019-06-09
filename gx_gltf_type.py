@@ -3,6 +3,10 @@
 
 """GLTF Definitions (schema: http://json-schema.org/draft-04/schema)"""
 
+# LESSONS/06 DIFFS: Tests delegated to python "unittest" framework
+#                   Tests code moved to test_gx_gltf_type.py
+#                   VSCode unittest support must be enabled and configured
+
 import inspect, pdb
 
 from pprint import pprint
@@ -1114,124 +1118,3 @@ def get_schema_based_list(vars_dict):
             res.append(o)
     return res
 
-
-if __name__ == '__main__':
-     
-    # OLD DEPRECATED CODE
-    
-    def anyOf(src):
-        if list == type(src):
-            enum = []
-            enum_type = 'UNDEFINED'
-            for d in src:
-                if 'enum' in d:
-                    enum.append(d['enum'][0])
-                elif 'type' in d:
-                    enum_type = d['type']
-                    if 'integer' == enum_type:
-                        enum_type = 'int'
-                else:
-                    enum_type = "<ERROR>"+repr(d)
-            return { enum_type: enum }
-        return repr(src)
-    
-    def print_info(cls, head='  '):
-        print("%sclass Gx%s: public QObject" % ( head,  cls.__name__ ) )
-        print("%s{" % (head,) )
-        print("%s    Q_OBJECT" % (head,) )
-        print("%spublic:" % (head,) )
-        
-        properties = cls.schema['properties']
-        properties = sorted([ (i, properties[i]) for i in properties ])
-        shead = head + "  "
-        for p, defs in properties:
-            if 'type' in defs:
-                if 'integer' == defs['type']:
-                    print('%sdict(%20s = %s)' % (shead, p, {'gx_type': 'int'}))
-                elif 'string' == defs['type']:
-                    print('%sdict(%20s = %s)' % (shead, p, {'gx_type': 'QString'}))
-                elif 'boolean' == defs['type']:
-                    print('%sdict(%20s = %s)' % (shead, p, {'gx_type': 'bool'}))
-                elif 'array' == defs['type']:
-                    item_type = defs['items']['type'] if defs['items'].has_key('type') else defs['items']
-                    if dict == type(item_type):
-                        item_type = Schema.refs[item_type['$ref']]
-                    print('%sdict(%20s = %s)' % (shead, p, {'gx_type': 'GxMap<int, %s>' % item_type}))
-                elif 'object' == defs['type']:
-                    print('%sdict(%20s = %s)' % (shead, p, {'gx_type': 'GxDict'}))
-                else:
-                    print('%sdict(%20s = %s)' % (shead, p, {'gx_type': defs['type'] }))
-                
-            elif 'allOf' in defs:
-                print('%sdict(%20s = %s)' % (shead, p, {'gx_type': 'int' }))
-                
-            elif 'anyOf' in defs:
-                print('%sdict(%20s = %s)' % (shead, p, {'gx_type': anyOf(defs['anyOf'])}))
-            else:
-                if 'extensions' == p:
-                    continue
-                elif 'extras' == p:
-                    continue
-                elif 'name' == p:
-                    print('%sdict(%20s = %s)' % (shead, p, {'gx_type': 'QString'}))
-                else:
-                    print('%sdict(%20s = %s)' % (shead,  p, {'gx_type': defs}))
-                    
-        print("%s}; // Gx%s End." % (head, cls.__name__) )
-        print("")
-
-    # OLD TESTS
-    #print_info(Accessor)
-    #print_info(Buffer)
-    #print_info(BufferView)
-    #print_info(Animation)
-    #print_info(Mesh)
-    #print_info(MeshPrimitive)
-    #print_info(Node)
-    #print_info(Material)
-    #print_info(Texture)
-    #print_info(Sampler)
-    #print_info(Gltf)
-    #print_info(Scene)
-    #print_info(Skin)
-    #print_info(Image)
-    
-    from pprint import pprint
-    
-    tested = get_schema_based_list(locals())
-    
-    for schema_based_class in tested:
-        schema_based_class.get_schema()
-
-    for cls in tested:
-        print("\n====%s===================" % cls.__name__)
-        cls.get_schema()
-        cls_class_list = {}
-        pprint(cls.meta)
-        print("\n\nclass Gx%s: public QObject" % cls.__name__)
-        print("{")
-        print("   Q_OBJECT")
-        print("public:")
-        for name in sorted(cls.meta.keys()):
-            if 'sparse' == name:
-                continue
-            typedef = cls.meta[name]['type']
-            if str == type(typedef):
-                # print(" // Simple type '%s:%s'" % (typedef, name))
-                print("  %-20sm_%s;" % (typedef, name))
-            elif tuple == type(typedef):
-                # print(" // Complex type '%s:%s'" % (typedef, name))
-                if len(typedef) == 2:  
-                    if list == type(typedef[0]):  # case => (['int',[...]], 'anyOf')
-                        print("  %-20sm_%s;" % ( typedef[0][0] , name ) )
-                    else:                         # case => ('int', 'anyOf')
-                        print("  %-20sm_%s;" % ( typedef[0] , name ) )
-                if len(typedef) == 3:
-                    # print hasattr(cls, cls.meta[p]['type'][0])
-                    print( " /*%s,%s*/" % (typedef, name ))
-            elif dict == type(typedef):
-                print(" // Dict type '%s:%s'" % (typedef, name) )
-                # print hasattr(cls, cls.meta[p]['type'][0])
-            else:
-                print(" // UNSUPPORTED type '%s : %s'" % (type(typedef), name) )
-        print("};\n")
