@@ -44,7 +44,6 @@ classes.
 class Generated01 : public GGapBase
 {
 public:
-    virtual ~GGapBase(){}
     void A() { /*for example some concrete init code*/ }
     void B() { /*for example some concrete drawing code*/ }
 }
