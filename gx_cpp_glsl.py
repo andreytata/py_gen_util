@@ -102,8 +102,8 @@ class QtGpuSkin(QtTemplate):
     def get_class_definition(self):
         return re.sub("%%(\\w+)%%", self, self.class_template)
 
-    def get_methods_body(self):
-        return re.sub("%%(\\w+)%%", self, self.cpp_template)
+    # def get_methods_body(self):
+    #     return re.sub("%%(\\w+)%%", self, init_geometry_method_template)
     
     def get_geometry_methods(self):
         return re.sub("%%(\\w+)%%", self, init_geometry_method_template)
@@ -183,7 +183,7 @@ namespace geom { namespace %%get_name_lower%% {
 #endif // GX_GENERATED_%%GET_NAME%%_H
 """
     
-    cpp_file_template = """#include<%%get_h_file_name%%>
+    cpp_file_template = """#include<%%get_hpp_file_name%%>
     %%get_method_definitions%%
 """
     def __init__(self, NAME, SRC, DST, PRI):
@@ -213,10 +213,10 @@ namespace geom { namespace %%get_name_lower%% {
     def get_cpp_file_name(self):
         return "gx_gen_%s.cpp" % self.get_name_lower()
 
-    def get_pri_buff(self):
+    def get_pri_file_body(self):
         return re.sub("%%(\\w+)%%", self, self.pri_file_template)
 
-    def get_h_file(self):
+    def get_hpp_file_body(self):
         return re.sub("%%(\\w+)%%", self, self.hpp_file_template)
 
     def get_class_list (self) :
@@ -240,8 +240,8 @@ namespace geom { namespace %%get_name_lower%% {
         self.rebuild_all()
     
     def rebuild_all(self):
-        pri_buff = self.get_pri_buff()
-        print(pri_buff)
+        pri_file_body = self.get_pri_file_body()
+        print(pri_file_body)
         print("GENERATE: generate %s" % self.out_dir )
         gltf = Gltf(self.src_gltf)
         dag  = DagTree(gltf)
@@ -258,7 +258,7 @@ namespace geom { namespace %%get_name_lower%% {
                 self.generate_skin_source(mesh_key)
             else:
                 self.generate_mesh_source(mesh_key)
-        gen_h_buff = self.get_h_file()
+        gen_h_buff = self.get_hpp_file_body()
         print( gen_h_buff )
         pass
 
@@ -299,6 +299,7 @@ namespace geom { namespace %%get_name_lower%% {
         buff = ""
         for cls in test.class_defs:
             buff += "%s\n" % cls.get_geometry_methods()
+        return buff
 
 
 if __name__ =='__main__':
@@ -310,5 +311,6 @@ if __name__ =='__main__':
     test.generate()
 
     print("=*"*20)
-    for cls in test.class_defs:
-        print("%s"%cls.get_geometry_methods())
+    # for cls in test.class_defs:
+    #     print("%s"%cls.get_geometry_methods())
+    print(test.get_method_definitions())
