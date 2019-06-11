@@ -38,40 +38,29 @@ void geom::%%get_pri_namespace%%::%%get_class_name%%::initGeometry()
 
 class QtTemplate:
     def __init__(self, self_pri, mesh_key):
+        # print("++%s" % self)
         self.weak_pri = weakref.ref(self_pri)
         self.mesh_key = mesh_key
         self.slots = []
-        pass #print("++%s" % self)
 
-    def get_name(self):
-        source = self.weak_pri()
-        shared = source.gxt.get_mesh_name(self.mesh_key)
-        return shared
+    # def __del__           (self):        print("--%s" % self)
 
-    def get_name_lower(self):
-        return self.get_name().lower()
+    def __call__(self, match):
+        return str(getattr(self, match.groups()[0])())
 
-    def get_name_upper(self):
-        return self.get_name().upper()
-
-    def gen_public_slots(self):
+    def get_name          (self): return self.weak_pri().gxt.get_mesh_name(self.mesh_key)
+    def get_name_lower    (self): return self.get_name().lower()
+    def get_name_upper    (self): return self.get_name().upper()
+    def get_pri_namespace (self): return self.weak_pri().get_name_lower()
+    def gen_public_slots  (self):
         buff = "//PUBLIC SLOTS\n"
         for i in self.slots:
             buff += i.generate(self)
         return buff
 
-    def get_pri_namespace(self):
-        return self.weak_pri().get_name_lower()
-
-    def __call__(self, match):
-        return str(getattr(self, match.groups()[0])())
-    
-    def __del__(self):
-        pass #print("--%s" % self)
-
 class QtGpuSkin(QtTemplate):
     class_template = """
-    class %%get_class_name%%: public gx::geom::QtGpuSkin  // SKIN
+    class %%get_class_name%%: public gx::geom::QtGpuSkin
     {
         QOBJECT
     public:
@@ -123,22 +112,13 @@ class QtGpuMesh(QtTemplate):
     attributes = []
     slots = []
     changed = True
-    def gen_signature(self):
-        return "".join(['P3','N3','T2'])
-
-    def get_class_name(self):
-        return "%s_shared" % self.get_name_lower()
-    # def get_class_name(self):
-    #     return "QtGpuMesh_%s" % self.get_name_lower()
-
-    def get_class_definition(self):
-        return re.sub("%%(\\w+)%%", self, self.template)
-
     def set_mesh_sources(self, PWD, GTX, KEY, VBO, vertices, IBO, indices ):
         self.name = GTX.source.gltf.path
 
-    def get_vbo_as_cpp_code(self):
-        return "/*get_vbo_as_cpp_code*/"
+    def gen_signature        (self): return "".join(['P3','N3','T2'])
+    def get_class_name       (self): return "%s_shared" % self.get_name_lower()
+    def get_class_definition (self): return re.sub("%%(\\w+)%%", self, self.template)
+    def get_vbo_as_cpp_code  (self): return "/*get_vbo_as_cpp_code*/"
 
     def generate(self, context):
         if self.changed:
@@ -148,18 +128,12 @@ class QtGpuMesh(QtTemplate):
     def pprint(self, out = sys.stdout):
         out.write("Hello .pprint Method%s" % self)
 
-    def get_vbo_file_name (self): return "%%QtGpuMesh.get_vbo_file_name%%"
-
-    def get_vbo_len       (self): return "%%QtGpuMesh.get_vbo_len%%"
-
-    def get_vbo_file_body (self): return "%%QtGpuMesh.get_vbo_file_body%%"
-
-    def get_ibo_file_name (self): return "%%QtGpuMesh.get_ibo_file_name%%"
-
-    def get_ibo_len       (self): return "%%QtGpuMesh.get_ibo_len%%"
-
-    def get_ibo_file_body (self): return "%%QtGpuMesh.get_ibo_file_body%%"
-
+    def get_vbo_file_name   (self): return "%%QtGpuMesh.get_vbo_file_name%%"
+    def get_vbo_len         (self): return "%%QtGpuMesh.get_vbo_len%%"
+    def get_vbo_file_body   (self): return "%%QtGpuMesh.get_vbo_file_body%%"
+    def get_ibo_file_name   (self): return "%%QtGpuMesh.get_ibo_file_name%%"
+    def get_ibo_len         (self): return "%%QtGpuMesh.get_ibo_len%%"
+    def get_ibo_file_body   (self): return "%%QtGpuMesh.get_ibo_file_body%%"
     def get_geometry_methods(self):
         return re.sub("%%(\\w+)%%", self, init_geometry_method_template)
 
@@ -203,26 +177,13 @@ namespace geom { namespace %%get_name_lower%% {
     def __call__(self, match):
         return str(getattr(self, match.groups()[0])())
 
-    def get_name(self):
-        return self.name
-
-    def get_name_lower(self):
-        return self.get_name().lower()
-
-    def GET_NAME(self):
-        return self.get_name().upper()
-
-    def get_hpp_file_name(self):
-        return "gx_gen_%s.h" % self.get_name_lower()
-
-    def get_cpp_file_name(self):
-        return "gx_gen_%s.cpp" % self.get_name_lower()
-
-    def get_pri_file_body(self):
-        return re.sub("%%(\\w+)%%", self, self.pri_file_template)
-
-    def get_hpp_file_body(self):
-        return re.sub("%%(\\w+)%%", self, self.hpp_file_template)
+    def get_name         (self): return self.name
+    def get_name_lower   (self): return self.get_name().lower()
+    def GET_NAME         (self): return self.get_name().upper()
+    def get_hpp_file_name(self): return "gx_gen_%s.h" % self.get_name_lower()
+    def get_cpp_file_name(self): return "gx_gen_%s.cpp" % self.get_name_lower()
+    def get_pri_file_body(self): return re.sub("%%(\\w+)%%", self, self.pri_file_template)
+    def get_hpp_file_body(self): return re.sub("%%(\\w+)%%", self, self.hpp_file_template)
 
     def get_class_list (self) :
         class_definitions = []
