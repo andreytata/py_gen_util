@@ -36,6 +36,16 @@ def generate_source_from_gltf(target_dir, match):
     proj.generate()
     print('  -o-END "%s"' % target_dir)
 
+class gx_gap_generated(Object):
+    """Each gx_gen_* folder in working directory must be added to factory.
+    only factory can contain all methods and appropriate methametods with
+    ability to create generated item instance. Each item separate, and all
+    items in scene.
+    """
+    def __init__(self, working_directory = '../'):
+        self.working_directory = working_directory
+        self.generated = dict()  # all sub-folders generated in working_directory
+
 if __name__=='__main__':
     print('''Python %s''' % sys.version)
     print('''os.getcwd() => "%s"''' % os.getcwd())
@@ -43,6 +53,7 @@ if __name__=='__main__':
     parsed_dir = os.path.split(utils_path)[0]
     print('utils_path "%s"' % utils_path)
     print('parsed_dir "%s"' % parsed_dir)
+    
     for name in os.listdir(parsed_dir):
         print("  ?%s" % os.path.join(parsed_dir, name))
         match = gx_gen_regexp.match(name)
