@@ -14,7 +14,7 @@ pri.generate()
 import sys, os, re, json, weakref
 from gx_gltf_make import (Gltf, DagTree, gxDagTree)
 
-init_geometry_method_template = """
+geometry_methods_definitin_template = """
 void geom::%%get_pri_namespace%%::%%get_class_name%%::initGeometry()
 {
     MeshVertexData vertices[] = {
@@ -88,7 +88,7 @@ class QtGpuSkin(QtTemplate):
     def get_ibo_file_name    (self): return "ibo_%s.inc" % self.get_name_lower()
     def get_ibo_len          (self): return "%%QtGpuSkin.get_ibo_len%%"
     def get_ibo_file_body    (self): return "%%QtGpuSkin.get_ibo_file_body%%"
-    def get_geometry_methods (self): return re.sub("%%(\\w+)%%", self, init_geometry_method_template)
+    def get_methods_body     (self): return re.sub("%%(\\w+)%%", self, geometry_methods_definitin_template)
 
 
 class QtGpuMesh(QtTemplate):
@@ -134,8 +134,7 @@ class QtGpuMesh(QtTemplate):
     def get_ibo_file_name   (self): return "%%QtGpuMesh.get_ibo_file_name%%"
     def get_ibo_len         (self): return "%%QtGpuMesh.get_ibo_len%%"
     def get_ibo_file_body   (self): return "%%QtGpuMesh.get_ibo_file_body%%"
-    def get_geometry_methods(self):
-        return re.sub("%%(\\w+)%%", self, init_geometry_method_template)
+    def get_methods_body    (self): return re.sub("%%(\\w+)%%", self, geometry_methods_definitin_template)
 
 
 class QtGltfBuiltinPri:
@@ -144,6 +143,7 @@ class QtGltfBuiltinPri:
 # Source at "%%get_src_file_path%%"
 # Usage:
 #   include(../gx_gen_%%get_name_lower%%/gx_gen_%%get_name_lower%%.pri)
+
 !contains ( INCLUDEPATH, $$PWD ) {
   HEADERS     += $$PWD/%%get_hpp_file_name%%
   SOURCES     += $$PWD/%%get_cpp_file_name%%
@@ -151,20 +151,20 @@ class QtGltfBuiltinPri:
   include($$PWD/../gx_gap_base/gx_gap_base.pri)
 }
 """
-    hpp_file_template = """#ifndef GX_GENERATED_%%GET_NAME%%_H
-#define GX_GENERATED_%%GET_NAME%%_H
+    hpp_file_template = """#ifndef GX_GENERATED_%%get_name_upper%%_H
+#define GX_GENERATED_%%get_name_upper%%_H
 
 #include <gx_src_glsl.h>
 
 namespace geom { namespace %%get_name_lower%% {
 %%get_class_list%%
-}  //geom::%%get_name_lower%%
+}}  //end namespace geom::%%get_name_lower%%
 
-#endif // GX_GENERATED_%%GET_NAME%%_H
+#endif // GX_GENERATED_%%get_name_upper%%_H
 """
-    
-    cpp_file_template = """#include<%%get_hpp_file_name%%>
-    %%get_method_definitions%%
+    cpp_file_template = """// WARNING! THIS CODE AUTO-GENERATED AT EACH PRE-COMPILATION STEP( like *.MOC )
+#include<%%get_hpp_file_name%%>
+%%get_method_definitions%%
 """
     def __init__(self, NAME, SRC, DST, PRI):
         self.class_defs = []
@@ -175,20 +175,23 @@ namespace geom { namespace %%get_name_lower%% {
         self.out_md5  = self.out_pri + '.builtin'
         print('')
 
-    def get_src_file_path(self): return self.src_gltf
-    def __call__(self, match):
-        return str(getattr(self, match.groups()[0])())
+    def __call__   (self, match): return str(getattr(self, match.groups()[0])())
 
-    def get_name         (self): return self.name
-    def get_name_lower   (self): return self.get_name().lower()
-    def GET_NAME         (self): return self.get_name().upper()
-    def get_hpp_file_name(self): return "gx_gen_%s.h" % self.get_name_lower()
-    def get_hpp_file_path(self): return os.path.abspath(os.path.join(self.out_dir, self.get_hpp_file_name()))
-    def get_cpp_file_name(self): return "gx_gen_%s.cpp" % self.get_name_lower()
-    def get_cpp_file_path(self): return os.path.abspath(os.path.join(self.out_dir, self.get_cpp_file_name()))
-    def get_pri_file_body(self): return re.sub("%%(\\w+)%%", self, self.pri_file_template)
-    def get_hpp_file_body(self): return re.sub("%%(\\w+)%%", self, self.hpp_file_template)
-    def get_cpp_file_body(self): return re.sub("%%(\\w+)%%", self, self.cpp_file_template)
+    def get_src_file_path (self): return self.src_gltf
+
+    def get_name          (self): return self.name
+    def get_name_lower    (self): return self.get_name().lower()
+    def get_name_upper    (self): return self.get_name().upper()
+
+    def get_hpp_file_name (self): return "gx_gen_%s.h" % self.get_name_lower()
+    def get_hpp_file_path (self): return os.path.abspath(os.path.join(self.out_dir, self.get_hpp_file_name()))
+    def get_hpp_file_body (self): return re.sub("%%(\\w+)%%", self, self.hpp_file_template)
+
+    def get_cpp_file_name (self): return "gx_gen_%s.cpp" % self.get_name_lower()
+    def get_cpp_file_path (self): return os.path.abspath(os.path.join(self.out_dir, self.get_cpp_file_name()))
+    def get_cpp_file_body (self): return re.sub("%%(\\w+)%%", self, self.cpp_file_template)
+
+    def get_pri_file_body (self): return re.sub("%%(\\w+)%%", self, self.pri_file_template)
 
     def get_class_list (self) :
         class_definitions = []
@@ -281,8 +284,9 @@ namespace geom { namespace %%get_name_lower%% {
 
     def get_method_definitions(self):
         buff = ""
-        for cls in test.class_defs:
-            buff += "%s\n" % cls.get_geometry_methods()
+        # call tree node's each sub-tree (so each sub can call own sub-tree)
+        for surface_class in self.class_defs:
+            buff += "%s\n" % surface_class.get_methods_body()
         return buff
 
 
@@ -293,8 +297,3 @@ if __name__ =='__main__':
         , '../gx_gen_slava_rig_2014_2015_new/gx_gen_slava_rig_2014_2015_new.pri'
     )
     test.generate()
-
-    # print("=*"*20)
-    # for cls in test.class_defs:
-    #     print("%s"%cls.get_geometry_methods())
-    # print(test.get_method_definitions())
