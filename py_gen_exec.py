@@ -5,8 +5,20 @@
 All folders named as gx_gen_NAMESPACE_NAME, with gx_gen_NAMESPACE_NAME.pri, this
 script find line with source glTF2.0 file. Folder can contain more then one file
 used .gltf extention, generator must use only one, defined in "py_gen_util.json:
-{"gltf":"file_name.gltf"
-}
+{..., "gltf":"file_name.gltf", ... }
+
+Все генерируемые классы интегрируются через объект генератор фабрики. Интерфейсы
+генерируемой геометрии и генерируемой фабрики элемента сцены описаны в interface,
+( qmake project "gx_gap_interface.pri" ). Каждый сгенерированный проект содержит
+класс-потомок абстрактой фабрики, которая в конкретный узел сцены может добавлять
+копию сцены и/или ссылку на сгенерированную поверхность (по имени в сцене).
+
+Корневой интегратор является словарем абстрактных фабрик, делающим всю генеративную
+часть доступной для инспекции и использования через вызов метаметода. Каждому слоту
+соответствует указатель на статически размещенную сгенерированную фабрику. Смысл в
+том, что ::set_geom_factory("scene_name") вызовет ::set_geom_factory_scene_name(), 
+который установит внутреннюю переменную mp_geom_factory. Значение которой можно
+получить через вызов get_geom_factory() => gx::geom::factory*.
 """
 
 import os, sys, re, json
@@ -36,7 +48,7 @@ def generate_source_from_gltf(target_dir, match):
     proj.generate()
     print('  -o-END "%s"' % target_dir)
 
-class gx_gap_generated(Object):
+class gx_gap_generated(object):
     """Each gx_gen_* folder in working directory must be added to factory.
     only factory can contain all methods and appropriate methametods with
     ability to create generated item instance. Each item separate, and all
