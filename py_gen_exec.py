@@ -56,7 +56,8 @@ class gx_gap_generated(object):
     """
     def __init__(self, working_directory = '../'):
         self.working_directory = working_directory
-        self.generated = dict()  # all sub-folders generated in working_directory
+        self.generated = dict()              # all sub-folders generated in working_directory
+        self.final_gen = "gx_gap_generated"  # folder & pri generated-factory project name
 
 if __name__=='__main__':
     print('''Python %s''' % sys.version)
