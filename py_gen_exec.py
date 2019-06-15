@@ -99,12 +99,38 @@ class gx_gap_generated(object):
         
         with open(self.factory_proj,"w") as f:
             f.write(self.get_pri_body())
+        
+        print(self.get_pri_body())
+    
+    @staticmethod
+    def get_pri_template():
+        return """# Auto-Generated Builtins Factory Class
+# Usage:
+#   include(../gx_gap_generated/gx_gap_generated.pri)
+!contains ( INCLUDEPATH, $$PWD ) {
+  HEADERS     += $$PWD/%%get_hpp_name%%
+  SOURCES     += $$PWD/%%get_cpp_name%%
+  INCLUDEPATH += $$PWD
+  include($$PWD/../gx_gap_interface/gx_gap_interface.pri)
+%%get_pri_gen_includes%%
+}
+"""
+    def __call__(self, match):
+        return str(getattr(self, match.groups()[0])())
 
-    def get_pri_body(self):
-        return """ # class gx_gap_generated.get_pri_body())
-        # ???
-        """
-
+    def get_name     (self): return "gx_gap_generated"
+    def get_cpp_name (self): return "%s.cpp" % self.get_name()
+    def get_pri_name (self): return "%s.pri" % self.get_name()
+    def get_hpp_name (self): return "%s.h"   % self.get_name()
+    def get_pri_body (self): return re.sub("%%(\\w+)%%", self, self.get_pri_template())
+    def get_pri_gen_includes(self):
+        includes = list()
+        for proj_name in self.generated:
+            includes.append("  include($$PWD/../%s/%s.pri)" % (proj_name, proj_name))
+        return "\n".join(includes)
+    def get_hpp_body(self):
+        return """
+""" 
 
 if __name__=='__main__':
     print('''Python %s''' % sys.version)

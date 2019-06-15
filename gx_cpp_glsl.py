@@ -45,9 +45,7 @@ class QtTemplate:
 
     # def __del__           (self):        print("--%s" % self)
 
-    def __call__(self, match):
-        return str(getattr(self, match.groups()[0])())
-
+    def __call__ ( self, match ): return str(getattr(self, match.groups()[0])())
     def get_name          (self): return self.weak_pri().gxt.get_mesh_name(self.mesh_key)
     def get_name_lower    (self): return self.get_name().lower()
     def get_name_upper    (self): return self.get_name().upper()
@@ -62,7 +60,7 @@ class QtGpuSkin(QtTemplate):
     class_template = """
     class %%get_class_name%%: public gx::geom::QtGpuSkin
     {
-        QOBJECT
+        Q_OBJECT
     public:
         virtual void drawGeometry(QOpenGLShaderProgram *program);
         virtual void initGeometry();
@@ -95,7 +93,7 @@ class QtGpuMesh(QtTemplate):
     template = """
     class %%get_class_name%%: public gx::geom::QtGpuMesh  // MESH
     {
-        QOBJECT
+        Q_OBJECT
     public:
         virtual void drawGeometry(QOpenGLShaderProgram *program);
         virtual void initGeometry();
@@ -128,13 +126,26 @@ class QtGpuMesh(QtTemplate):
     def pprint(self, out = sys.stdout):
         out.write("Hello .pprint Method%s" % self)
 
-    def get_vbo_file_name   (self): return "%%QtGpuMesh.get_vbo_file_name%%"
-    def get_vbo_len         (self): return "%%QtGpuMesh.get_vbo_len%%"
-    def get_vbo_file_body   (self): return "%%QtGpuMesh.get_vbo_file_body%%"
-    def get_ibo_file_name   (self): return "%%QtGpuMesh.get_ibo_file_name%%"
-    def get_ibo_len         (self): return "%%QtGpuMesh.get_ibo_len%%"
-    def get_ibo_file_body   (self): return "%%QtGpuMesh.get_ibo_file_body%%"
-    def get_methods_body    (self): return re.sub("%%(\\w+)%%", self, geometry_methods_definitin_template)
+    def get_vbo_file_name   (self):
+        return "%%get_vbo_file_name%%"
+
+    def get_vbo_len         (self):
+        return "%%get_vbo_len%%"
+
+    def get_vbo_file_body   (self):
+        return "%%get_vbo_file_body%%"
+
+    def get_ibo_file_name   (self):
+        return "%%get_ibo_file_name%%"
+
+    def get_ibo_len         (self):
+        return "%%get_ibo_len%%"
+
+    def get_ibo_file_body   (self):
+        return "%%get_ibo_file_body%%"
+
+    def get_methods_body    (self):
+        return re.sub("%%(\\w+)%%", self, geometry_methods_definitin_template)
 
 
 class QtGltfBuiltinPri:
@@ -154,7 +165,7 @@ class QtGltfBuiltinPri:
     hpp_file_template = """#ifndef GX_GENERATED_%%get_name_upper%%_H
 #define GX_GENERATED_%%get_name_upper%%_H
 
-#include <gx_src_glsl.h>
+#include <gx_gap_interface.h>
 
 namespace geom { namespace %%get_name_lower%% {
 %%get_class_list%%
