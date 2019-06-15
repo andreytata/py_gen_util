@@ -54,10 +54,57 @@ class gx_gap_generated(object):
     ability to create generated item instance. Each item separate, and all
     items in scene.
     """
-    def __init__(self, working_directory = '../'):
+    def __init__(self, working_directory):
         self.working_directory = working_directory
-        self.generated = dict()              # all sub-folders generated in working_directory
-        self.final_gen = "gx_gap_generated"  # folder & pri generated-factory project name
+        self.generated = dict()  # all sub-folders generated in working_directory
+        # After all sub-project folders are generated this class must generate 'builder' - base
+        # class for application's builtins factory (scene and geometry derived). Class folder &
+        # "pri"-file included to application main "pro" or for other "pri" file
+        self.factory_name = "gx_gap_generated"  # 'factory' project's folder & project-file name
+        self.factory_path = os.path.abspath(os.path.join(self.working_directory, self.factory_name))
+        self.factory_proj = os.path.join( self.factory_path, self.factory_name+'.pri' )
+    
+    def generate(self):
+        print( "PROJECT path '%s'" % self.working_directory )
+        for name in os.listdir(self.working_directory):
+            print("  ?%s" % os.path.join(parsed_dir, name))
+            match = gx_gen_regexp.match(name)
+            if match:
+                target_dir = os.path.join(parsed_dir, name)
+                print('  -o-BEGIN target_dir "%s"' % target_dir)
+                print('   | match.groups()    %s' % repr(match.groups()))
+                config = open(os.path.join(target_dir, "py_gen_util.json"), "r")
+                config = json.loads(config.read())
+                print('   | config            %s' % config )
+                gltf_file_path = os.path.join(target_dir, config['gltf'])
+                print('   | gltf_file_path    "%s"' % gltf_file_path)
+                
+                if not os.path.isfile(gltf_file_path): raise IOError(gltf_file_path)
+
+                namespace = match.groups()[0]
+                target_pri = os.path.join(target_dir, "gx_gen_%s.pri" % namespace)
+                proj = QtGltfBuiltinPri( namespace  # 'Slava_Rig_2'
+                    , gltf_file_path                # '/bla/bla/Blender_export/Slava_Rig_2014_2015_NEW.gltf'
+                    , target_dir                    # '/bla/bla/my_qt_project/builtins/gx_gen_Slava_Rig_2'
+                    , target_pri                    # '/bla/bla/my_qt_project/builtins/gx_gen_Slava_Rig_2/gx_gen_Slava_Rig_2.pri'
+                )
+                self.generated[name]=proj
+                proj.generate()
+                print('  -o-END "%s"' % target_dir)
+        print( "PROJECT dict '%s'" % self.generated )
+        print( "        path '%s'" % self.factory_path)
+        
+        if not os.path.isdir(self.factory_path):
+            os.makedirs(self.factory_path)
+        
+        with open(self.factory_proj,"w") as f:
+            f.write(self.get_pri_body())
+
+    def get_pri_body(self):
+        return """ # class gx_gap_generated.get_pri_body())
+        # ???
+        """
+
 
 if __name__=='__main__':
     print('''Python %s''' % sys.version)
@@ -67,9 +114,12 @@ if __name__=='__main__':
     print('utils_path "%s"' % utils_path)
     print('parsed_dir "%s"' % parsed_dir)
     
-    for name in os.listdir(parsed_dir):
-        print("  ?%s" % os.path.join(parsed_dir, name))
-        match = gx_gen_regexp.match(name)
-        if match:
-            target_dir = os.path.join(parsed_dir, name)
-            generate_source_from_gltf(target_dir, match)
+    gx_project=gx_gap_generated(parsed_dir)
+    gx_project.generate()
+
+    # for name in os.listdir(parsed_dir):
+    #     print("  ?%s" % os.path.join(parsed_dir, name))
+    #     match = gx_gen_regexp.match(name)
+    #     if match:
+    #         target_dir = os.path.join(parsed_dir, name)
+    #         generate_source_from_gltf(target_dir, match)
