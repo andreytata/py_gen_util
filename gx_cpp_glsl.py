@@ -17,21 +17,21 @@ from gx_gltf_make import (Gltf, DagTree, gxDagTree)
 geometry_methods_definitin_template = """
 void geom::%%get_pri_namespace%%::%%get_class_name%%::initGeometry()
 {
-    MeshVertexData vertices[] = {
+    %%get_vertex_data_class_name%% vertices[] =
         #include <%%get_vbo_file_name%%>
-    }; // len = %%get_vbo_len%% ( example 8164 ) is vertices count, not floats 
+    ; // len = %%get_vbo_len%% ( example 8164 ) is vertices count, not floats 
 
-    GLushort indices[]    = {
+    GLushort indices[]    = 
         #include <%%get_ibo_file_name%%>
-    }; // len = %%get_ibo_len%% ( example 47733 )
+    ; // len = %%get_ibo_len%% ( example 47733 )
 
     // Transfer vertex data to VBO 0
     arrayBuf.bind();
-    arrayBuf.allocate(vertices, get_vertices_count() * get_vertex_size());
+    arrayBuf.allocate(vertices, %%get_vbo_len%% * %%get_vertex_size%% );
 
     // Transfer index data to VBO 1
     indexBuf.bind();
-    indexBuf.allocate(indices, get_indices_count() * sizeof(GLushort));
+    indexBuf.allocate(indices, %%get_ibo_len%% * sizeof(GLushort));
 }
 """
 
@@ -46,7 +46,7 @@ class QtTemplate:
     # def __del__           (self):        print("--%s" % self)
 
     def __call__ ( self, match ): return str(getattr(self, match.groups()[0])())
-    def get_name          (self): return self.weak_pri().gxt.get_mesh_name(self.mesh_key)
+    def get_name          (self): return self.weak_pri().gxt.get_mesh_name(self.mesh_key).replace(" ", "___")
     def get_name_lower    (self): return self.get_name().lower()
     def get_name_upper    (self): return self.get_name().upper()
     def get_pri_namespace (self): return self.weak_pri().get_name_lower()
@@ -58,15 +58,12 @@ class QtTemplate:
 
 class QtGpuSkin(QtTemplate):
     class_template = """
-    class %%get_class_name%%: public gx::geom::QtGpuSkin
+    class %%get_class_name%%: public geom::QtGpuSkin
     {
-        Q_OBJECT
     public:
         virtual void drawGeometry(QOpenGLShaderProgram *program);
         virtual void initGeometry();
         const char* get_vbo_signature() { return "%%gen_signature%%"; }
-    public slots:
-        %%gen_public_slots%%
     };
     """
     glsl_vertex_attribute = dict(
@@ -81,25 +78,26 @@ class QtGpuSkin(QtTemplate):
     def get_class_name       (self): return "%s_shared" % self.get_name_lower()
     def get_class_definition (self): return re.sub("%%(\\w+)%%", self, self.class_template)
     def get_vbo_file_name    (self): return "vbo_%s.inc" % self.get_name_lower()
-    def get_vbo_len          (self): return "%%QtGpuSkin.get_vbo_len%%"
-    def get_vbo_file_body    (self): return "%%QtGpuSkin.get_vbo_file_body%%"
+    def get_vbo_len          (self): return "%s" % self.vertices
+    def get_vbo_file_body    (self): return "%s" % self.vbo
     def get_ibo_file_name    (self): return "ibo_%s.inc" % self.get_name_lower()
-    def get_ibo_len          (self): return "%%QtGpuSkin.get_ibo_len%%"
-    def get_ibo_file_body    (self): return "%%QtGpuSkin.get_ibo_file_body%%"
+    def get_ibo_len          (self): return "%s" % self.indices
+    def get_ibo_file_body    (self): return "%s" % self.ibo
     def get_methods_body     (self): return re.sub("%%(\\w+)%%", self, geometry_methods_definitin_template)
+    def get_vertex_data_class_name(self) : return "SkinVertexData"
+    def get_vertex_size      (self): return "sizeof(%s)" % self.get_vertex_data_class_name()
 
 
 class QtGpuMesh(QtTemplate):
     template = """
-    class %%get_class_name%%: public gx::geom::QtGpuMesh  // MESH
+    class %%get_class_name%%: public geom::QtGpuMesh
     {
-        Q_OBJECT
     public:
         virtual void drawGeometry(QOpenGLShaderProgram *program);
         virtual void initGeometry();
         const char* get_vbo_signature() { return "%%gen_signature%%"; }
-    public slots:
-        %%gen_public_slots%%
+//    public slots:
+//        %%gen_public_slots%%
     };
     """
     glsl_vertex_attribute = dict(
@@ -117,35 +115,24 @@ class QtGpuMesh(QtTemplate):
     def get_class_name       (self): return "%s_shared" % self.get_name_lower()
     def get_class_definition (self): return re.sub("%%(\\w+)%%", self, self.template)
     def get_vbo_as_cpp_code  (self): return "/*get_vbo_as_cpp_code*/"
+    def get_vertex_data_class_name(self) : return "MeshVertexData"
+    def get_vertex_size      (self): return "sizeof(%s)" % self.get_vertex_data_class_name()
 
     def generate(self, context):
         if self.changed:
             context.get_name()
             self.changed = False
-        
+
     def pprint(self, out = sys.stdout):
         out.write("Hello .pprint Method%s" % self)
 
-    def get_vbo_file_name   (self):
-        return "%%get_vbo_file_name%%"
-
-    def get_vbo_len         (self):
-        return "%%get_vbo_len%%"
-
-    def get_vbo_file_body   (self):
-        return "%%get_vbo_file_body%%"
-
-    def get_ibo_file_name   (self):
-        return "%%get_ibo_file_name%%"
-
-    def get_ibo_len         (self):
-        return "%%get_ibo_len%%"
-
-    def get_ibo_file_body   (self):
-        return "%%get_ibo_file_body%%"
-
-    def get_methods_body    (self):
-        return re.sub("%%(\\w+)%%", self, geometry_methods_definitin_template)
+    def get_vbo_file_name   (self): return "vbo_%s.inc" % self.get_name_lower()
+    def get_vbo_len         (self): return "%s" % self.vertices
+    def get_vbo_file_body   (self): return "%s" % self.vbo
+    def get_ibo_file_name   (self): return "ibo_%s.inc" % self.get_name_lower()
+    def get_ibo_len         (self): return "%s" % self.indices
+    def get_ibo_file_body   (self): return "%s" % self.ibo
+    def get_methods_body    (self): return re.sub("%%(\\w+)%%", self, geometry_methods_definitin_template)
 
 
 class QtGltfBuiltinPri:
@@ -258,6 +245,13 @@ namespace geom { namespace %%get_name_lower%% {
             cpp.write(self.get_cpp_file_body())
         with open(self.get_hpp_file_path(),"w") as hpp:
             hpp.write(self.get_hpp_file_body())
+        for surface_class in self.class_defs:
+            vbo_file_path = os.path.join(self.out_dir, surface_class.get_vbo_file_name())
+            with open(vbo_file_path, "w") as vbo_inl:
+                vbo_inl.write(surface_class.get_vbo_file_body())
+            ibo_file_path = os.path.join(self.out_dir, surface_class.get_ibo_file_name())
+            with open(ibo_file_path, "w") as ibo_inl:
+                ibo_inl.write(surface_class.get_ibo_file_body())
         # print(self.get_hpp_file_path())
 
     def get_vertex_signature(self, mesh_key):
@@ -272,12 +266,13 @@ namespace geom { namespace %%get_name_lower%% {
 
     def generate_skin_source(self, mesh_key):
         print("  SKIN[%d] %s" % ( mesh_key, self.gxt.get_mesh_name(mesh_key) ) )
-        self.class_defs.append(QtGpuSkin(self, mesh_key))  ## ADDING SKIN CLASS GENERATOR TO SCOPE
+        skin=QtGpuSkin(self, mesh_key)
+        self.class_defs.append(skin)  ## ADDING SKIN CLASS GENERATOR TO SCOPE
         method_name = 'get_interleaved_'  + self.get_vertex_signature( mesh_key )
         method = getattr( self.gxt, method_name )
-        vertices, vbo = method( mesh_key )
-        indices, ibo = self.gxt.get_indices_PP( mesh_key )
-        print("  %s" % repr( ( vertices, len(vbo), indices, len(ibo) ) ) )
+        skin.vertices, skin.vbo = method( mesh_key )
+        skin.indices, skin.ibo = self.gxt.get_indices_PP( mesh_key )
+        print("  %s" % repr( ( skin.vertices, len(skin.vbo), skin.indices, len(skin.ibo) ) ) )
 
     def generate_mesh_source(self, mesh_key):
         """Generate h and cpp file additional objects:
@@ -286,12 +281,13 @@ namespace geom { namespace %%get_name_lower%% {
         Use scene name as "namespace" for all this scene geometry, camera, e.t.c.
         """
         print("  MESH[%d] %s" % ( mesh_key, self.gxt.get_mesh_name(mesh_key) ) )
-        self.class_defs.append(QtGpuMesh(self, mesh_key))  ## ADDING MESH CLASS GENERATOR TO SCOPE
+        mesh=QtGpuMesh(self, mesh_key)
+        self.class_defs.append(mesh)  ## ADDING MESH CLASS GENERATOR TO SCOPE
         method_name = 'get_interleaved_'  + self.get_vertex_signature( mesh_key )
         method = getattr(self.gxt, method_name)
-        vertices, vbo = method( mesh_key )
-        indices, ibo = self.gxt.get_indices_PP( mesh_key )
-        print("  %s" % repr( ( vertices, len(vbo), indices, len(ibo) ) ) )
+        mesh.vertices, mesh.vbo = method( mesh_key )
+        mesh.indices, mesh.ibo = self.gxt.get_indices_PP( mesh_key )
+        print("  %s" % repr( ( mesh.vertices, len(mesh.vbo), mesh.indices, len(mesh.ibo) ) ) )
 
     def get_method_definitions(self):
         buff = ""
