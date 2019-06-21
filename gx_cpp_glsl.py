@@ -14,7 +14,7 @@ pri.generate()
 import sys, os, re, json, weakref
 from gx_gltf_make import (Gltf, DagTree, gxDagTree)
 
-geometry_methods_definitin_template = """
+geometry_methods_definitin_template = u"""
 void geom::%%get_pri_namespace%%::%%get_class_name%%::initGeometry()
 {
     %%get_vertex_data_class_name%% vertices[] =
@@ -35,6 +35,103 @@ void geom::%%get_pri_namespace%%::%%get_class_name%%::initGeometry()
 }
 """
 
+geometry_methods_mesh_draw_template = u"""
+void geom::%%get_pri_namespace%%::%%get_class_name%%::drawGeometry(QOpenGLShaderProgram *program)
+// void GeometryEngine::drawGeometry(QOpenGLShaderProgram *program)
+{
+    // Tell OpenGL which VBOs to use
+    arrayBuf.bind();
+    indexBuf.bind();
+
+    // Offset for position
+    quintptr offset = 0;
+
+    /// POSITION
+    // Tell OpenGL programmable pipeline how to locate vertex position data
+    int vertexLocation = program->attributeLocation("a_position");
+    program->enableAttributeArray(vertexLocation);
+    program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(MeshVertexData));
+
+    // Offset for "normal" 
+    offset += sizeof(QVector3D);
+
+    /// NORMAL
+    // Tell OpenGL programmable pipeline how to locate vertex position data
+    int normalLocation = program->attributeLocation("a_normal");
+    program->enableAttributeArray(normalLocation);
+    program->setAttributeBuffer(normalLocation, GL_FLOAT, offset, 3, sizeof(MeshVertexData));
+
+    // Offset for "texture coordinate"
+    offset += sizeof(QVector3D);
+
+    /// TEXCOORD_0
+    // Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
+    int texcoordLocation = program->attributeLocation("a_texcoord");
+    program->enableAttributeArray(texcoordLocation);
+    program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(MeshVertexData));
+
+    // Draw cube geometry using indices(IBO) from VBO 1
+    // glDrawElements(GL_TRIANGLE_STRIP, 34, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLES, %%get_ibo_len%%, GL_UNSIGNED_SHORT, 0);
+}
+"""
+
+geometry_methods_skin_draw_template = u"""
+void geom::%%get_pri_namespace%%::%%get_class_name%%::drawGeometry(QOpenGLShaderProgram *program)
+//void geom::QtGpuSkin::drawGeometry(QOpenGLShaderProgram *program)
+{
+    // Tell OpenGL which VBOs to use
+    arrayBuf.bind();
+    indexBuf.bind();
+
+    // Offset for position
+    quintptr offset = 0;
+
+    /// int attribute_location, QString attribute_name location
+    /// POSITION
+    // Tell OpenGL programmable pipeline how to locate vertex position data
+    int vertexLocation = program->attributeLocation("a_position");
+    program->enableAttributeArray(vertexLocation);
+    program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(SkinVertexData));
+
+    // Offset for normal vector
+    offset += sizeof(QVector3D);
+
+    /// NORMAL
+    // Tell OpenGL programmable pipeline how to locate normal vector data
+    int normalLocation = program->attributeLocation("a_normal");
+    program->enableAttributeArray(normalLocation);
+    program->setAttributeBuffer(normalLocation, GL_FLOAT, offset, 3, sizeof(SkinVertexData));
+
+    offset += sizeof(QVector3D);
+
+    /// WEIGHTS_0
+    // Tell OpenGL programmable pipeline how to locate joint's WEIGHTS_0 vec4 data
+    int weights_0_location = program->attributeLocation("a_weights_0");
+    program->enableAttributeArray(weights_0_location);
+    program->setAttributeBuffer(weights_0_location, GL_FLOAT, offset, 4, sizeof(SkinVertexData));
+
+    offset += sizeof(QVector4D);
+
+    /// JOINTS_0
+    // Tell OpenGL programmable pipeline how to locate joint's WEIGHTS_0 vec4 data
+    int joints_0_location = program->attributeLocation("a_joints_0");
+    program->enableAttributeArray(joints_0_location);
+    program->setAttributeBuffer(joints_0_location, GL_FLOAT, offset, 4, sizeof(SkinVertexData));
+
+    offset += sizeof(QVector4D);
+
+    /// TEXCOORD_0
+    // Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
+    int texcoordLocation = program->attributeLocation("a_texcoord");
+    program->enableAttributeArray(texcoordLocation);
+    program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(SkinVertexData));
+
+    // Draw cube geometry using indices from VBO 1
+    // glDrawElements(GL_TRIANGLE_STRIP, 34, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLES, 47733, GL_UNSIGNED_SHORT, 0);
+}
+"""
 
 class QtTemplate:
     def __init__(self, self_pri, mesh_key):
@@ -50,11 +147,15 @@ class QtTemplate:
     def get_name_lower    (self): return self.get_name().lower()
     def get_name_upper    (self): return self.get_name().upper()
     def get_pri_namespace (self): return self.weak_pri().get_name_lower()
+    
     def gen_public_slots  (self):
         buff = "//PUBLIC SLOTS\n"
         for i in self.slots:
             buff += i.generate(self)
         return buff
+    
+    def get_methods_body  (self):
+        return re.sub("%%(\\w+)%%", self, self.get_methods_definition_template())
 
 class QtGpuSkin(QtTemplate):
     class_template = """
@@ -83,10 +184,14 @@ class QtGpuSkin(QtTemplate):
     def get_ibo_file_name    (self): return "ibo_%s.inc" % self.get_name_lower()
     def get_ibo_len          (self): return "%s" % self.indices
     def get_ibo_file_body    (self): return "%s" % self.ibo
-    def get_methods_body     (self): return re.sub("%%(\\w+)%%", self, geometry_methods_definitin_template)
     def get_vertex_data_class_name(self) : return "SkinVertexData"
     def get_vertex_size      (self): return "sizeof(%s)" % self.get_vertex_data_class_name()
-
+    def get_methods_definition_template(self):
+        defs = list()
+        defs.append("//%s\n"%repr(self))
+        defs.append( geometry_methods_definitin_template )
+        defs.append( geometry_methods_skin_draw_template )
+        return "\n".join(defs)
 
 class QtGpuMesh(QtTemplate):
     template = """
@@ -132,8 +237,13 @@ class QtGpuMesh(QtTemplate):
     def get_ibo_file_name   (self): return "ibo_%s.inc" % self.get_name_lower()
     def get_ibo_len         (self): return "%s" % self.indices
     def get_ibo_file_body   (self): return "%s" % self.ibo
-    def get_methods_body    (self): return re.sub("%%(\\w+)%%", self, geometry_methods_definitin_template)
 
+    def get_methods_definition_template(self):
+        defs = list()
+        defs.append("//%s\n"%repr(self))
+        defs.append( geometry_methods_definitin_template )
+        defs.append( geometry_methods_mesh_draw_template )
+        return "\n".join(defs)
 
 class QtGltfBuiltinPri:
     """ Single QT-PRI project from glTF2.0 Resource Generator"""
@@ -160,7 +270,7 @@ namespace geom { namespace %%get_name_lower%% {
 
 #endif // GX_GENERATED_%%get_name_upper%%_H
 """
-    cpp_file_template = """// WARNING! THIS CODE AUTO-GENERATED AT EACH PRE-COMPILATION STEP( like *.MOC )
+    cpp_file_template = u"""// WARNING! THIS CODE AUTO-GENERATED AT EACH PRE-COMPILATION STEP( like *.MOC )
 #include<%%get_hpp_file_name%%>
 %%get_method_definitions%%
 """
