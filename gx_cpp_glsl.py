@@ -42,6 +42,9 @@ void geom::%%get_pri_namespace%%::%%get_class_name%%::drawGeometry(QOpenGLShader
     // Tell OpenGL which VBOs to use
     arrayBuf.bind();
     indexBuf.bind();
+    /*
+    %%get_joints%%
+    */
 
     // Offset for position
     quintptr offset = 0;
@@ -83,7 +86,9 @@ void geom::%%get_pri_namespace%%::%%get_class_name%%::drawGeometry(QOpenGLShader
     // Tell OpenGL which VBOs to use
     arrayBuf.bind();
     indexBuf.bind();
-
+    /*
+    %%get_joints%%
+    */
     // Offset for position
     quintptr offset = 0;
 
@@ -154,8 +159,15 @@ class QtTemplate:
             buff += i.generate(self)
         return buff
     
-    def get_methods_body  (self):
+    def get_methods_definition_template(self):
+        return "/*get_methods_definition_template undefined in %s*/" % repr(self)
+    
+    def get_methods_body(self):
         return re.sub("%%(\\w+)%%", self, self.get_methods_definition_template())
+
+    def gltf(self):
+        return self.weak_pri().gxt.source.gltf
+
 
 class QtGpuSkin(QtTemplate):
     class_template = """
@@ -193,6 +205,31 @@ class QtGpuSkin(QtTemplate):
         defs.append( geometry_methods_skin_draw_template )
         return "\n".join(defs)
 
+    def get_joints(self):
+        """
+        skinned[n][0] - the name of the node with number 'n'
+        skinned[n][1] - mesh number in meshes
+        skinned[n][3] - skin number in GLTF's skins 
+        """
+        skinned = self.gltf_skinned()
+        for n in skinned:
+            if skinned[n][1] == self.mesh_key:
+                break
+        ## mesh = self.gltf().meshes [ skinned[n][1] ]
+        skin = self.gltf().skins  [ skinned[n][2] ]
+        path = getattr(self.gltf().nodes[n],"abs_path")
+        return repr(skin) + "'%s'"%path  
+    
+    def gltf_skinned(self):
+        if not hasattr(self, "skinned"):
+            skinned = {}
+            for e, node in enumerate(self.gltf().nodes):
+                if hasattr(node, "skin"):
+                    skinned[e] = [ node.name, node.mesh, node.skin ]  
+            setattr(self, "skinned", skinned)
+        return getattr(self, "skinned" )
+
+
 class QtGpuMesh(QtTemplate):
     template = """
     class %%get_class_name%%: public geom::QtGpuMesh
@@ -222,6 +259,14 @@ class QtGpuMesh(QtTemplate):
     def get_vbo_as_cpp_code  (self): return "/*get_vbo_as_cpp_code*/"
     def get_vertex_data_class_name(self) : return "MeshVertexData"
     def get_vertex_size      (self): return "sizeof(%s)" % self.get_vertex_data_class_name()
+
+    def get_joints(self):
+        buff = {}
+        nodes = self.gltf().nodes
+        for e, n in enumerate(nodes):
+            if hasattr(n, "mesh") and (n.mesh == self.mesh_key):
+                buff[e] = (e,getattr(n,"abs_path"), self.get_name())
+        return "MESH AT"+ repr(buff)
 
     def generate(self, context):
         if self.changed:
@@ -414,3 +459,13 @@ if __name__ =='__main__':
         , '../gx_gen_slava_rig_2014_2015_new/gx_gen_slava_rig_2014_2015_new.pri'
     )
     test.generate()
+    
+    for geom in test.class_defs:
+        print(geom.get_joints())
+    # dag = test.class_defs[0].weak_pri().gxt.source.gltf.nodes
+    # print( "TYPE %s" % type( dag ) )
+    # gltf = test.class_defs[0].weak_pri().gxt.source.gltf
+    # print(test.class_defs[0].weak_pri().gxt.source.gltf.nodes)
+    # import pdb
+    # pdb.set_trace()
+
