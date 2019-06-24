@@ -36,8 +36,12 @@ void geom::%%get_pri_namespace%%::%%get_class_name%%::initGeometry()
 """
 
 geometry_methods_mesh_draw_template = u"""
+void geom::%%get_pri_namespace%%::%%get_class_name%%::get_vertex_size()
+{
+    return sizeof(MeshVertexData);
+}
+
 void geom::%%get_pri_namespace%%::%%get_class_name%%::drawGeometry(QOpenGLShaderProgram *program)
-// void GeometryEngine::drawGeometry(QOpenGLShaderProgram *program)
 {
     // Tell OpenGL which VBOs to use
     arrayBuf.bind();
@@ -80,8 +84,12 @@ void geom::%%get_pri_namespace%%::%%get_class_name%%::drawGeometry(QOpenGLShader
 """
 
 geometry_methods_skin_draw_template = u"""
+void geom::%%get_pri_namespace%%::%%get_class_name%%::get_vertex_size()
+{
+    return sizeof(SkinVertexData);
+}
+
 void geom::%%get_pri_namespace%%::%%get_class_name%%::drawGeometry(QOpenGLShaderProgram *program)
-//void geom::QtGpuSkin::drawGeometry(QOpenGLShaderProgram *program)
 {
     // Tell OpenGL which VBOs to use
     arrayBuf.bind();
@@ -144,6 +152,17 @@ class QtTemplate:
         self.weak_pri = weakref.ref(self_pri)
         self.mesh_key = mesh_key
         self.slots = []
+        self.variables = {}  # Individual programm variables sended before draw
+                             # It is some sloned skin part, depend "gltf" scene
+                             # texture, matrix, view-transformations e.t.c.
+        """This kind of variables maybe connected on disconnected from self data-source.
+        For example, some transformation matrix must be sended to GLSL programm before draw,
+        is hardcoded in vertex shader code, but has no data source yet. In this case shared
+        copy of the initial "GLTF" value must be connected to "disconnected" transformation.
+        So, copy of all default values must be stored at shared side and initially connected
+        to cloned variable node (animation port) as data source. Before some value sended to
+        from animation data (initial position).  
+        """
 
     # def __del__           (self):        print("--%s" % self)
 
@@ -167,7 +186,6 @@ class QtTemplate:
 
     def gltf(self):
         return self.weak_pri().gxt.source.gltf
-
 
 class QtGpuSkin(QtTemplate):
     class_template = """
@@ -206,7 +224,9 @@ class QtGpuSkin(QtTemplate):
         return "\n".join(defs)
 
     def get_joints(self):
-        """
+        """skin has joints, but first path in jonints list is skinned mesh position in scene graph.
+        Each next path, is gxt-path to joint used in this skin-claster. Joint can be placed in joint
+        and all joints can be inserted in "skeleton" node (has no real examle for this case, yet) 
         skinned[n][0] - the name of the node with number 'n'
         skinned[n][1] - mesh number in meshes
         skinned[n][3] - skin number in GLTF's skins 
@@ -216,9 +236,14 @@ class QtGpuSkin(QtTemplate):
             if skinned[n][1] == self.mesh_key:
                 break
         ## mesh = self.gltf().meshes [ skinned[n][1] ]
+        ## bind-positions collect from skin's inverse bind matrices
+        ## joints positions collect from skin's joints (as nodes) dyip
         skin = self.gltf().skins  [ skinned[n][2] ]
+        jpl = {}
+        for e, j in enumerate(skin.joints):
+            jpl[e] = getattr(self.gltf().nodes[j], "abs_path")    
         path = getattr(self.gltf().nodes[n],"abs_path")
-        return repr(skin) + "'%s'"%path  
+        return repr(skin) + "'%s'"%path  + repr(jpl)
     
     def gltf_skinned(self):
         if not hasattr(self, "skinned"):
@@ -261,6 +286,9 @@ class QtGpuMesh(QtTemplate):
     def get_vertex_size      (self): return "sizeof(%s)" % self.get_vertex_data_class_name()
 
     def get_joints(self):
+        """mesh has no joints, but has self set of the view transformations:
+        Is only one string ( slash separated path ), where each chain is gxt - node's name
+        """
         buff = {}
         nodes = self.gltf().nodes
         for e, n in enumerate(nodes):
