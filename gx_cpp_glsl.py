@@ -36,7 +36,7 @@ void geom::%%get_pri_namespace%%::%%get_class_name%%::initGeometry()
 """
 
 geometry_methods_mesh_draw_template = u"""
-void geom::%%get_pri_namespace%%::%%get_class_name%%::get_vertex_size()
+int geom::%%get_pri_namespace%%::%%get_class_name%%::get_vertex_size()
 {
     return sizeof(MeshVertexData);
 }
@@ -84,7 +84,7 @@ void geom::%%get_pri_namespace%%::%%get_class_name%%::drawGeometry(QOpenGLShader
 """
 
 geometry_methods_skin_draw_template = u"""
-void geom::%%get_pri_namespace%%::%%get_class_name%%::get_vertex_size()
+int geom::%%get_pri_namespace%%::%%get_class_name%%::get_vertex_size()
 {
     return sizeof(SkinVertexData);
 }
@@ -194,6 +194,7 @@ class QtGpuSkin(QtTemplate):
     public:
         virtual void drawGeometry(QOpenGLShaderProgram *program);
         virtual void initGeometry();
+        virtual int get_vertex_size();
         const char* get_vbo_signature() { return "%%gen_signature%%"; }
     };
     """
@@ -262,6 +263,7 @@ class QtGpuMesh(QtTemplate):
     public:
         virtual void drawGeometry(QOpenGLShaderProgram *program);
         virtual void initGeometry();
+        virtual int get_vertex_size();
         const char* get_vbo_signature() { return "%%gen_signature%%"; }
 //    public slots:
 //        %%gen_public_slots%%
