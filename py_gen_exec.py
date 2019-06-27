@@ -229,9 +229,15 @@ if __name__=='__main__':
     parsed_dir = os.path.split(utils_path)[0]
     print('utils_path "%s"' % utils_path)
     print('parsed_dir "%s"' % parsed_dir)
+
+    from gx_cpp_face import gx_gap_interface
+
+    interface_proj = gx_gap_interface(parsed_dir)
+    interface_proj.generate()
     
-    gx_project=gx_gap_generated(parsed_dir)
-    gx_project.generate()
+    generated_proj = gx_gap_generated(parsed_dir)
+    generated_proj.generate()
+
 
     # for name in os.listdir(parsed_dir):
     #     print("  ?%s" % os.path.join(parsed_dir, name))
