@@ -323,7 +323,7 @@ def generate(path):
     class my_gx_gap_interface(gx_gap_interface):
         pass
 
-    face = my_gx_gap_interface(path, name="gx_000_interface")
+    face = my_gx_gap_interface(path, name="gx_gap_interface")
     info = json.loads(face.get_info())
 
     pprint.pprint( info, width=2 )
