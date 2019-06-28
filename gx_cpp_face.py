@@ -82,10 +82,31 @@ namespace geom {
         // GeometryEngine:: : virtual int  GeometryEngine :: get_vertex_size();
     };
 
-    class node
+    class view
     {
     public:
+        virtual ~view(){}
+    };
+
+    class vars: public view
+    {
+        std::map<QString, view*> context;
+    public:
+        vars(){}
+        virtual ~vars(){}
+    };
+
+    class node: public view
+    {
+        std::map<QString, view*> context;
+        //
+    public:
         node(){}
+        ~node(){}
+    public:
+        void new_node(const QString&){}
+        void del_node(const QString&){}
+        // void success(actor&);
     };
 }
 
