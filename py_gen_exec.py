@@ -47,6 +47,47 @@ static_node* geom::generated::%%get_gltf_name%%::get_scene()
 кода, инициировавший его создание, но указатель на матрицу с начальным положением этот
 "клон" будет иметь. Этого должно быть достаточно для запуска "визитора" в разделяемое
 дерево статических узлов. "визитор" - это то что рисует граф сцены, или клонирует его.
+
+#include <stdio.h>
+#include <list>
+struct seed {
+    struct node;  // contain "transform" QMatrix4x4) ??
+    struct mesh;
+    struct skin;
+    struct vars;
+    struct tran;  // transform ( contain both "init" node* and "curr" QMatrix4x4) ??
+    struct proc{
+        virtual void on(node*) = 0;
+        virtual void on(mesh*) = 0;
+        virtual void on(skin*) = 0;
+        virtual void on(vars*) = 0;
+        virtual~proc(); 
+    };
+    seed(const char*n):mp_name(n){}
+    virtual ~seed();
+    virtual void on(seed::proc*)=0;
+    const char* mp_name = "undefined";
+    struct bind {
+        bind(node*,node*) {
+            // ... how to bind
+        }
+    };
+};
+
+struct seed::node : seed {node(const char*p):seed(p){}
+ void on(seed::proc*p) { p->on(this); } };
+struct seed::mesh : seed {mesh(const char*p):seed(p){}
+ void on(seed::proc*p) { p->on(this); } };
+struct seed::skin : seed {skin(const char*p):seed(p){}
+ void on(seed::proc*p) { p->on(this); } };
+
+seed* gen_main() {
+    static seed::node n00("scene_root_name");
+    static seed::node n01("scene_root_name");
+    static seed::bind b0 (&n00, &n01);
+    // ...
+    return &n00;
+}
 """
 
 generated_hpp_template = """// WARNING! : IS AUTO-GENERATED FILE, DO NOT EDIT
