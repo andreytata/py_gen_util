@@ -43,6 +43,11 @@ int geom::%%get_pri_namespace%%::%%get_class_name%%::get_vertex_size()
 
 void geom::%%get_pri_namespace%%::%%get_class_name%%::drawGeometry(QOpenGLShaderProgram *program)
 {
+    if (need_gpu_upload) {
+        initGeometry();
+        need_gpu_upload = false;
+    }
+
     // Tell OpenGL which VBOs to use
     arrayBuf.bind();
     indexBuf.bind();
@@ -91,6 +96,11 @@ int geom::%%get_pri_namespace%%::%%get_class_name%%::get_vertex_size()
 
 void geom::%%get_pri_namespace%%::%%get_class_name%%::drawGeometry(QOpenGLShaderProgram *program)
 {
+    if (need_gpu_upload) {
+        initGeometry();
+        need_gpu_upload = false;
+    }
+
     // Tell OpenGL which VBOs to use
     arrayBuf.bind();
     indexBuf.bind();

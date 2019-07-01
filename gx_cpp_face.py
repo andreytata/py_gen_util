@@ -58,6 +58,7 @@ public:
 protected:
     QOpenGLBuffer arrayBuf;
     QOpenGLBuffer indexBuf;
+    bool need_gpu_upload = true;
 };
 
 namespace geom {
@@ -65,7 +66,7 @@ namespace geom {
     class QtGpuMesh : public GeometryEngine
     {
     public:
-        QtGpuMesh();
+        QtGpuMesh(){}
         virtual ~QtGpuMesh(){}
         // GeometryEngine:: : virtual void drawGeometry(QOpenGLShaderProgram *program);
         // GeometryEngine:: : virtual void initGeometry();
@@ -75,7 +76,7 @@ namespace geom {
     class QtGpuSkin : public GeometryEngine
     {
     public:
-        QtGpuSkin();
+        QtGpuSkin(){}
         virtual ~QtGpuSkin(){}
         virtual void drawGeometry(QOpenGLShaderProgram *program);
         // GeometryEngine:: : virtual void  initGeometry();
@@ -115,11 +116,14 @@ namespace geom {
 gx_cpp_face_template = """
 #include <%%get_name%%.h>
 
-GeometryEngine::GeometryEngine() : indexBuf(QOpenGLBuffer::IndexBuffer) {
+GeometryEngine::GeometryEngine()
+ : indexBuf(QOpenGLBuffer::IndexBuffer)
+ , need_gpu_upload(true)
+{
     initializeOpenGLFunctions();
     arrayBuf.create();
     indexBuf.create();
-    initGeometry();
+    // initGeometry();
 }
 
 GeometryEngine::~GeometryEngine() {
@@ -153,6 +157,11 @@ void GeometryEngine::initGeometry() {
 
 void GeometryEngine::drawGeometry(QOpenGLShaderProgram *program)
 {
+    if (need_gpu_upload) {
+        initGeometry();
+        need_gpu_upload = false;
+    }
+
     // Tell OpenGL which VBOs to use
     arrayBuf.bind();
     indexBuf.bind();
