@@ -55,7 +55,7 @@ struct seed {
     struct mesh;
     struct skin;
     struct vars;
-    struct tran;  // transform ( contain both "init" node* and "curr" QMatrix4x4) ??
+    // struct tran;  // transform ( contain both "init" node* and "curr" QMatrix4x4) ??
     struct proc{
         virtual void on(node*) = 0;
         virtual void on(mesh*) = 0;
@@ -74,12 +74,29 @@ struct seed {
     };
 };
 
-struct seed::node : seed {node(const char*p):seed(p){}
- void on(seed::proc*p) { p->on(this); } };
-struct seed::mesh : seed {mesh(const char*p):seed(p){}
- void on(seed::proc*p) { p->on(this); } };
-struct seed::skin : seed {skin(const char*p):seed(p){}
- void on(seed::proc*p) { p->on(this); } };
+struct seed::node : seed
+{
+    node(const char*p):seed(p){}
+    void on(seed::proc*p) { p->on(this); }
+};
+
+struct seed::mesh : seed
+{
+    mesh(const char*p):seed(p){}
+    void on(seed::proc*p) { p->on(this); }
+};
+
+struct seed::skin : seed
+{
+    skin(const char*p):seed(p){}
+    void on(seed::proc*p) { p->on(this); }
+};
+
+struct seed::vars : seed
+{
+    vars(const char*p):seed(p){}
+    void on(seed::proc*p) { p->on(this); }
+};
 
 seed* gen_main() {
     static seed::node n00("scene_root_name");
@@ -153,28 +170,6 @@ import os, sys, re, json
 from gx_cpp_glsl import QtGltfBuiltinPri
 
 gx_gen_regexp = re.compile("^gx_gen_([_a-z][_a-z0-9]*)$")
-
-# def generate_source_from_gltf(target_dir, match):
-#     print('  -o-BEGIN target_dir "%s"' % target_dir)
-#     print('   | match.groups()    %s' % repr(match.groups()))
-#     config = open(os.path.join(target_dir, "py_gen_util.json"), "r")
-#     config = json.loads(config.read())
-#     print('   | config            %s' % config )
-#     gltf_file_path = os.path.join(target_dir, config['gltf'])
-#     print('   | gltf_file_path    "%s"' % gltf_file_path)
-    
-#     if not os.path.isfile(gltf_file_path): raise IOError(gltf_file_path)
-    
-#     namespace = match.groups()[0]
-#     target_pri = os.path.join(target_dir, "gx_gen_%s.pri" % namespace)
-#                                         # EXAMLE: 
-#     proj = QtGltfBuiltinPri( namespace  # Slava_Rig_2
-#         , gltf_file_path                # /bla/bla/Blender_export/Slava_Rig_2014_2015_NEW.gltf
-#         , target_dir                    # /bla/bla/my_qt_project/builtins/gx_gen_Slava_Rig_2
-#         , target_pri                    # /bla/bla/my_qt_project/builtins/gx_gen_Slava_Rig_2/gx_gen_Slava_Rig_2.pri'
-#     )
-#     proj.generate()
-#     print('  -o-END "%s"' % target_dir)
 
 class gx_gap_generated(object):
     """Each gx_gen_* folder in working directory must be added to factory.
