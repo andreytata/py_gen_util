@@ -14,6 +14,27 @@ pri.generate()
 import sys, os, re, json, weakref
 from gx_gltf_make import (Gltf, DagTree, gxDagTree)
 
+
+gx_gen_pri_hpp_file_template = """#ifndef GX_GENERATED_%%get_name_upper%%_H
+#define GX_GENERATED_%%get_name_upper%%_H
+
+#include <gx_gap_interface.h>
+
+namespace geom { namespace %%get_name_lower%% {
+%%get_class_list%%
+    // GEN GAP INTERFACE'S STATIC-ALLOCATED TRANSFORM-NODE POINTER, BUT WITH GeometryEngine*
+    // 
+}}  //end namespace geom::%%get_name_lower%%
+
+#endif // GX_GENERATED_%%get_name_upper%%_H
+"""
+
+gx_gen_pri_cpp_file_template = u"""// WARNING! AUTO-GENERATED AT PRE-COMPILATION STEP ( like *.MOC )
+#include<%%get_hpp_file_name%%>
+%%get_method_definitions%%
+"""
+
+
 geometry_methods_definitin_template = u"""
 void geom::%%get_pri_namespace%%::%%get_class_name%%::initGeometry()
 {
@@ -344,21 +365,9 @@ class QtGltfBuiltinPri:
   include($$PWD/../gx_gap_base/gx_gap_base.pri)
 }
 """
-    hpp_file_template = """#ifndef GX_GENERATED_%%get_name_upper%%_H
-#define GX_GENERATED_%%get_name_upper%%_H
+    hpp_file_template = gx_gen_pri_hpp_file_template
+    cpp_file_template = gx_gen_pri_cpp_file_template
 
-#include <gx_gap_interface.h>
-
-namespace geom { namespace %%get_name_lower%% {
-%%get_class_list%%
-}}  //end namespace geom::%%get_name_lower%%
-
-#endif // GX_GENERATED_%%get_name_upper%%_H
-"""
-    cpp_file_template = u"""// WARNING! THIS CODE AUTO-GENERATED AT EACH PRE-COMPILATION STEP( like *.MOC )
-#include<%%get_hpp_file_name%%>
-%%get_method_definitions%%
-"""
     def __init__(self, NAME, SRC, DST, PRI):
         self.class_defs = []
         self.name     = NAME
@@ -378,11 +387,13 @@ namespace geom { namespace %%get_name_lower%% {
 
     def get_hpp_file_name (self): return "gx_gen_%s.h" % self.get_name_lower()
     def get_hpp_file_path (self): return os.path.abspath(os.path.join(self.out_dir, self.get_hpp_file_name()))
-    def get_hpp_file_body (self): return re.sub("%%(\\w+)%%", self, self.hpp_file_template)
+    def get_hpp_file_body (self): return re.sub("%%(\\w+)%%", self, self.get_hpp_file_form())
+    def get_hpp_file_form (self): return self.hpp_file_template
 
     def get_cpp_file_name (self): return "gx_gen_%s.cpp" % self.get_name_lower()
     def get_cpp_file_path (self): return os.path.abspath(os.path.join(self.out_dir, self.get_cpp_file_name()))
-    def get_cpp_file_body (self): return re.sub("%%(\\w+)%%", self, self.cpp_file_template)
+    def get_cpp_file_body (self): return re.sub("%%(\\w+)%%", self, self.get_cpp_file_form())
+    def get_cpp_file_form (self): return self.cpp_file_template
 
     def get_pri_file_body (self): return re.sub("%%(\\w+)%%", self, self.pri_file_template)
 
