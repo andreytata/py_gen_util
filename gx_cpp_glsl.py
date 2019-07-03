@@ -21,6 +21,7 @@ gx_gen_pri_hpp_file_template = """#ifndef GX_GENERATED_%%get_name_upper%%_H
 #include <gx_gap_interface.h>
 
 namespace geom { namespace %%get_name_lower%% {
+    GeometryComponent* get_scene_root();
 %%get_class_list%%
     // GEN GAP INTERFACE'S STATIC-ALLOCATED TRANSFORM-NODE POINTER, BUT WITH GeometryEngine*
     // 
@@ -31,6 +32,8 @@ namespace geom { namespace %%get_name_lower%% {
 
 gx_gen_pri_cpp_file_template = u"""// WARNING! AUTO-GENERATED AT PRE-COMPILATION STEP ( like *.MOC )
 #include<%%get_hpp_file_name%%>
+GeometryComponent* geom::%%get_name_lower%%::get_scene_root() { return nullptr; }
+
 %%get_method_definitions%%
 """
 
