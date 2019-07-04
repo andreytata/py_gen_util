@@ -14,6 +14,29 @@ pri.generate()
 import sys, os, re, json, weakref
 from gx_gltf_make import (Gltf, DagTree, gxDagTree)
 
+gx_gen_mesh_class_template = """
+    class %%get_class_name%%: public geom::QtGpuMesh
+    {
+    public:
+        virtual void drawGeometry(QOpenGLShaderProgram *program);
+        virtual void initGeometry();
+        virtual int get_vertex_size();
+        const char* get_vbo_signature() { return "%%gen_signature%%"; }
+//    public slots:
+//        %%gen_public_slots%%
+    };
+"""
+
+gx_gen_skin_class_template = """
+    class %%get_class_name%%: public geom::QtGpuSkin
+    {
+    public:
+        virtual void drawGeometry(QOpenGLShaderProgram *program);
+        virtual void initGeometry();
+        virtual int get_vertex_size();
+        const char* get_vbo_signature() { return "%%gen_signature%%"; }
+    };
+"""
 
 gx_gen_pri_hpp_file_template = """#ifndef GX_GENERATED_%%get_name_upper%%_H
 #define GX_GENERATED_%%get_name_upper%%_H
@@ -42,7 +65,6 @@ GeometryComponent* geom::%%get_name_lower%%::get_scene_root()
 
 %%get_method_definitions%%
 """
-
 
 geometry_methods_definitin_template = u"""
 void geom::%%get_pri_namespace%%::%%get_class_name%%::initGeometry()
@@ -228,16 +250,7 @@ class QtTemplate:
         return self.weak_pri().gxt.source.gltf
 
 class QtGpuSkin(QtTemplate):
-    class_template = """
-    class %%get_class_name%%: public geom::QtGpuSkin
-    {
-    public:
-        virtual void drawGeometry(QOpenGLShaderProgram *program);
-        virtual void initGeometry();
-        virtual int get_vertex_size();
-        const char* get_vbo_signature() { return "%%gen_signature%%"; }
-    };
-    """
+    class_template = gx_gen_skin_class_template
     glsl_vertex_attribute = dict(
         P3 = ( 'vec4' , 'a_position'  , 'QVector3D' ),
         N3 = ( 'vec4' , 'a_normal'    , 'QVector3D' ),
@@ -248,7 +261,10 @@ class QtGpuSkin(QtTemplate):
     changed = True
     def gen_signature        (self): return "".join(['P3','N3','W4','J4','T2'])
     def get_class_name       (self): return "%s_shared" % self.get_name_lower()
-    def get_class_definition (self): return re.sub("%%(\\w+)%%", self, self.class_template)
+    def get_class_definition (self):
+        return re.sub("%%(\\w+)%%", self, self.get_class_template())
+    def get_class_template(self):
+        return self.class_template 
     def get_vbo_file_name    (self): return "vbo_%s.inc" % self.get_name_lower()
     def get_vbo_len          (self): return "%s" % self.vertices
     def get_vbo_file_body    (self): return "%s" % self.vbo
@@ -297,18 +313,7 @@ class QtGpuSkin(QtTemplate):
 
 
 class QtGpuMesh(QtTemplate):
-    template = """
-    class %%get_class_name%%: public geom::QtGpuMesh
-    {
-    public:
-        virtual void drawGeometry(QOpenGLShaderProgram *program);
-        virtual void initGeometry();
-        virtual int get_vertex_size();
-        const char* get_vbo_signature() { return "%%gen_signature%%"; }
-//    public slots:
-//        %%gen_public_slots%%
-    };
-    """
+    class_template = gx_gen_mesh_class_template
     glsl_vertex_attribute = dict(
         P3 = ( 'vec4' , 'a_position'  , 'QVector3D' ),
         N3 = ( 'vec4' , 'a_normal'    , 'QVector3D' ),
@@ -322,7 +327,8 @@ class QtGpuMesh(QtTemplate):
 
     def gen_signature        (self): return "".join(['P3','N3','T2'])
     def get_class_name       (self): return "%s_shared" % self.get_name_lower()
-    def get_class_definition (self): return re.sub("%%(\\w+)%%", self, self.template)
+    def get_class_definition (self): return re.sub("%%(\\w+)%%", self, self.get_class_template())
+    def get_class_template   (self): return self.class_template
     def get_vbo_as_cpp_code  (self): return "/*get_vbo_as_cpp_code*/"
     def get_vertex_data_class_name(self) : return "MeshVertexData"
     def get_vertex_size      (self): return "sizeof(%s)" % self.get_vertex_data_class_name()
