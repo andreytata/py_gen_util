@@ -44,11 +44,21 @@ struct SkinVertexData {  // P3N3W4J4T2
     QVector2D texCoord;
 };
 
-class GeometryComponent: protected QOpenGLFunctions {
+class GeometryComponent: protected QOpenGLFunctions
+{
 public:
     virtual~GeometryComponent(){}
     virtual void drawGeometry(QOpenGLShaderProgram *program) = 0;
     virtual void initGeometry() = 0;
+};
+
+class GeometryTransform: public GeometryComponent
+{
+    QMatrix4x4                            view_transform;
+    std::map<QString, GeometryComponent*> dag_components;
+public:
+    virtual void drawGeometry(QOpenGLShaderProgram*){}
+    virtual void initGeometry(){}
 };
 
 class GeometryEngine : public GeometryComponent  //protected QOpenGLFunctions
