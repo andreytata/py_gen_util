@@ -5,8 +5,7 @@ gx_inf_face_template = """{ "type": "%%%%"
 , "path": "%%get_path%%"
 }"""
 
-gx_hpp_face_template = """
-#ifndef %%get_name_upper%%_H
+gx_hpp_face_template = """#ifndef %%get_name_upper%%_H
 #define %%get_name_upper%%_H
 
 #include <QOpenGLFunctions>
@@ -44,7 +43,7 @@ struct SkinVertexData {  // P3N3W4J4T2
     QVector2D texCoord;
 };
 
-class GeometryComponent: protected QOpenGLFunctions
+class GeometryComponent: protected QOpenGLFunctions  // pure abstract geometry scene component
 {
 public:
     virtual~GeometryComponent(){}
@@ -61,7 +60,7 @@ public:
     virtual void initGeometry(){}
 };
 
-class GeometryEngine : public GeometryComponent  //protected QOpenGLFunctions
+class GeometryEngine : public GeometryComponent
 {
 public:
     GeometryEngine();

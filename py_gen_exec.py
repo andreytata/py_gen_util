@@ -174,7 +174,7 @@ gx_gen_regexp = re.compile("^gx_gen_([_a-z][_a-z0-9]*)$")
 class gx_gap_generated(object):
     """Each gx_gen_* folder in working directory must be added to factory.
     only factory can contain all methods and appropriate methametods with
-    ability to create generated item instance. Each item separate, and all
+    ability to create generated item instance. Each item separate and all
     items in scene.
     """
     generated_hpp_template = generated_hpp_template
