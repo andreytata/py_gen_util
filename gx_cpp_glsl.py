@@ -377,7 +377,7 @@ class QtGltfBuiltinPri:
   HEADERS     += $$PWD/%%get_hpp_file_name%%
   SOURCES     += $$PWD/%%get_cpp_file_name%%
   INCLUDEPATH += $$PWD
-  include($$PWD/../gx_gap_base/gx_gap_base.pri)
+  include($$PWD/../gx_gap_interface/gx_gap_interface.pri)
 }
 """
     hpp_file_template = gx_gen_pri_hpp_file_template
