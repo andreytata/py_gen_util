@@ -66,6 +66,13 @@ GeometryComponent* geom::%%get_name_lower%%::get_scene_root()
 %%get_method_definitions%%
 """
 
+
+geometry_methods_get_surf_vars_ptr_template = u"""
+/*
+geometry_methods_get_surf_vars_ptr_template
+*/
+"""
+
 geometry_methods_definitin_template = u"""
 void geom::%%get_pri_namespace%%::%%get_class_name%%::initGeometry()
 {
@@ -364,6 +371,7 @@ class QtGpuMesh(QtTemplate):
         defs.append("//%s\n"%repr(self))
         defs.append( geometry_methods_definitin_template )
         defs.append( geometry_methods_mesh_draw_template )
+        defs.append( geometry_methods_get_surf_vars_ptr_template)
         return "\n".join(defs)
 
 class QtGltfBuiltinPri:
